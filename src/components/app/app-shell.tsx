@@ -3,22 +3,21 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard, Package, Boxes, ShoppingBag, Wallet,
   FileBarChart, Settings as SettingsIcon, Menu, X, LogOut,
-  Users, Globe,
+  Users,
 } from "lucide-react";
 import { cls } from "@/lib/format";
 import { useAuth } from "@/services/auth/auth-context";
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
 const NAV: NavItem[] = [
-  { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/app/kits", label: "Kits & BOM", icon: Boxes },
-  { to: "/app/components", label: "Componentes", icon: Package },
-  { to: "/app/sales", label: "Vendas & Agenda", icon: ShoppingBag },
-  { to: "/app/finance", label: "Finanças", icon: Wallet },
-  { to: "/app/reports", label: "Relatórios", icon: FileBarChart },
-  { to: "/app/catalog", label: "Catálogo", icon: Globe },
-  { to: "/app/settings", label: "Configurações", icon: SettingsIcon },
-  { to: "/app/customers", label: "Clientes", icon: Users },
+  { to: "/app",            label: "Dashboard",          icon: LayoutDashboard, exact: true },
+  { to: "/app/kits",       label: "Kits & BOM",          icon: Boxes },
+  { to: "/app/components", label: "Acervo",              icon: Package },
+  { to: "/app/sales",      label: "Locações & Agenda",   icon: ShoppingBag },
+  { to: "/app/finance",    label: "Finanças",            icon: Wallet },
+  { to: "/app/reports",    label: "Relatórios",          icon: FileBarChart },
+  { to: "/app/settings",   label: "Configurações",       icon: SettingsIcon },
+  { to: "/app/customers",  label: "Clientes",            icon: Users },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
