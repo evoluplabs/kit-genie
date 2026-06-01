@@ -3,10 +3,12 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard, Package, Boxes, ShoppingBag, Wallet,
   FileBarChart, Settings as SettingsIcon, Menu, X, LogOut,
-  Users,
+  Users, Bell, CalendarClock, RotateCcw, AlertTriangle,
 } from "lucide-react";
-import { cls } from "@/lib/format";
+import { cls, fmtDate } from "@/lib/format";
 import { useAuth } from "@/services/auth/auth-context";
+import { useDb } from "@/hooks/use-db";
+import { salesRepo, type Sale } from "@/services/db";
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
 const NAV: NavItem[] = [
@@ -21,11 +23,39 @@ const NAV: NavItem[] = [
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = React.useState(false);
+  const [open,       setOpen]       = React.useState(false);
+  const [notifOpen,  setNotifOpen]  = React.useState(false);
   const loc = useLocation();
   const { user, signOut } = useAuth();
 
   React.useEffect(() => { setOpen(false); }, [loc.pathname]);
+
+  /* ── Lembretes: eventos em 48h + retornos vencidos/próximos ── */
+  const allSales = useDb(() => salesRepo.list());
+
+  type Reminder = { type: "evento" | "retorno"; sale: Sale; diff: number; overdue: boolean };
+  const reminders = React.useMemo((): Reminder[] => {
+    const now    = Date.now();
+    const twoDay = 2 * 86_400_000;
+    const items: Reminder[] = [];
+    allSales
+      .filter(s => !["cancelado", "concluido"].includes(s.status))
+      .forEach(s => {
+        const toEvent = s.eventDate - now;
+        if (toEvent >= 0 && toEvent <= twoDay) {
+          items.push({ type: "evento", sale: s, diff: toEvent, overdue: false });
+        }
+        if (s.returnDate) {
+          const toReturn = s.returnDate - now;
+          if (toReturn <= twoDay) {
+            items.push({ type: "retorno", sale: s, diff: toReturn, overdue: toReturn < 0 });
+          }
+        }
+      });
+    return items.sort((a, b) => a.diff - b.diff);
+  }, [allSales]);
+
+  const urgentCount = reminders.filter(r => r.overdue || r.diff < 86_400_000).length;
 
   return (
     <div className="min-h-screen bg-surface flex">
@@ -35,26 +65,30 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="size-8 bg-primary rounded-lg grid place-items-center text-primary-foreground font-display font-bold">P</div>
           <span className="font-bold text-primary-dark">PinkLove</span>
         </Link>
-        <button onClick={() => setOpen(v => !v)} className="size-9 grid place-items-center rounded-lg hover:bg-secondary">
-          {open ? <X className="size-5" /> : <Menu className="size-5" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <NotifButton count={reminders.length} urgent={urgentCount > 0} onClick={() => setNotifOpen(v => !v)} />
+          <button onClick={() => setOpen(v => !v)} className="size-9 grid place-items-center rounded-lg hover:bg-secondary">
+            {open ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
+        </div>
       </header>
 
       <aside className={cls(
         "fixed lg:sticky top-0 z-30 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col transition-transform",
         open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
-        <div className="hidden lg:flex h-20 items-center px-6 border-b border-sidebar-border">
+        <div className="hidden lg:flex h-20 items-center justify-between px-6 border-b border-sidebar-border">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="size-10 bg-primary rounded-xl grid place-items-center text-primary-foreground font-display font-bold text-lg shadow-soft">P</div>
             <span className="font-bold text-primary-dark text-lg">PinkLove</span>
           </Link>
+          <NotifButton count={reminders.length} urgent={urgentCount > 0} onClick={() => setNotifOpen(v => !v)} />
         </div>
 
         <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto pt-20 lg:pt-5">
           {NAV.map(item => {
             const active = item.exact ? loc.pathname === item.to : loc.pathname.startsWith(item.to);
-            const Icon = item.icon;
+            const Icon   = item.icon;
             return (
               <Link
                 key={item.to}
@@ -92,12 +126,86 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {open && <div onClick={() => setOpen(false)} className="fixed inset-0 bg-black/40 z-20 lg:hidden" />}
+      {open      && <div onClick={() => setOpen(false)}      className="fixed inset-0 bg-black/40 z-20 lg:hidden" />}
+      {notifOpen && <div onClick={() => setNotifOpen(false)} className="fixed inset-0 z-40" />}
+
+      {/* Painel de lembretes */}
+      {notifOpen && (
+        <div className="fixed top-16 lg:top-4 right-4 z-50 w-80 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+            <p className="font-semibold text-sm flex items-center gap-2">
+              <Bell className="size-4 text-primary" /> Lembretes
+            </p>
+            <button onClick={() => setNotifOpen(false)} className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-surface">
+              <X className="size-3.5" />
+            </button>
+          </div>
+          <div className="max-h-80 overflow-y-auto">
+            {reminders.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">🎉 Nenhum evento nas próximas 48h.</p>
+            ) : (
+              <div className="divide-y divide-border">
+                {reminders.map((r, i) => (
+                  <div
+                    key={i}
+                    className={cls(
+                      "flex items-start gap-3 px-4 py-3 text-sm",
+                      r.overdue ? "bg-red-50" : r.diff < 86_400_000 ? "bg-amber-50" : "",
+                    )}
+                  >
+                    <div className="mt-0.5 shrink-0">
+                      {r.type === "evento"
+                        ? <CalendarClock className={cls("size-4", r.diff < 86_400_000 ? "text-amber-500" : "text-blue-500")} />
+                        : <RotateCcw    className={cls("size-4", r.overdue ? "text-red-500" : "text-orange-400")} />
+                      }
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold truncate">{r.sale.customerName}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{r.sale.kitNameSnapshot}</p>
+                      <p className={cls(
+                        "text-[11px] font-semibold mt-0.5",
+                        r.overdue ? "text-red-600" : r.diff < 86_400_000 ? "text-amber-600" : "text-blue-600",
+                      )}>
+                        {r.type === "evento" ? "📅 Evento" : r.overdue ? "⚠️ Retorno vencido" : "🔄 Retorno"}
+                        {" · "}{fmtDate(r.type === "evento" ? r.sale.eventDate : r.sale.returnDate!)}
+                      </p>
+                    </div>
+                    {r.overdue && <AlertTriangle className="size-3.5 text-red-500 shrink-0 mt-1" />}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <main className="flex-1 min-w-0 pt-14 lg:pt-0">
         {children}
       </main>
     </div>
+  );
+}
+
+function NotifButton({ count, urgent, onClick }: { count: number; urgent: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={cls(
+        "relative size-9 grid place-items-center rounded-xl transition-colors",
+        urgent ? "hover:bg-amber-100" : "hover:bg-secondary",
+      )}
+      title="Lembretes"
+    >
+      <Bell className={cls("size-4", urgent ? "text-amber-500" : "text-muted-foreground")} />
+      {count > 0 && (
+        <span className={cls(
+          "absolute -top-0.5 -right-0.5 min-w-[16px] h-4 rounded-full text-[9px] font-bold text-white grid place-items-center px-0.5",
+          urgent ? "bg-red-500" : "bg-primary",
+        )}>
+          {count > 9 ? "9+" : count}
+        </span>
+      )}
+    </button>
   );
 }
 
