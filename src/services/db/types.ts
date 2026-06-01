@@ -7,14 +7,14 @@ export type Unit = "un" | "m" | "kg" | "rolo" | "pct" | "par";
 export interface Component {
   id: ID;
   name: string;
-  category: string;          // ex: "Balão", "Painel", "Mesa", "Decor"
+  category: string;
   unit: Unit;
-  stock: number;             // quantidade atual em estoque
-  minStock: number;          // alerta de estoque baixo
-  unitCost: number;          // custo médio por unidade
-  reusable: boolean;         // material reutilizável (locação) vs consumível
-  color?: string;            // cor nomeada: "rosa", "azul", "vermelho", etc.
-  variation?: string;        // "pequeno" | "médio" | "grande" | "alta" | "baixa"
+  stock: number;
+  minStock: number;
+  unitCost: number;
+  reusable: boolean;
+  color?: string;
+  variation?: string;
   notes?: string;
   createdAt: number;
   updatedAt: number;
@@ -22,29 +22,27 @@ export interface Component {
 
 export interface KitItem {
   componentId: ID;
-  quantity: number;          // qtd usada do componente no kit
+  quantity: number;
 }
-
-/* ── Tiers de kit (Bronze / Prata / Ouro) ───────────────────────────────── */
 
 export type KitTierName = "bronze" | "prata" | "ouro";
 
 export interface KitTier {
   name: KitTierName;
   price: number;
-  items: KitItem[];          // BOM específico do tier
+  items: KitItem[];
   description?: string;
 }
 
 export interface Kit {
   id: ID;
-  name: string;              // ex: "Kit Mickey Premium"
-  theme: string;             // ex: "Mickey", "Batman", "Personalizado"
+  name: string;
+  theme: string;
   type: "decoracao" | "pegue_monte" | "locacao";
   description?: string;
-  price: number;             // preço base
-  items: KitItem[];          // BOM base
-  tiers?: KitTier[];         // variações Bronze/Prata/Ouro
+  price: number;
+  items: KitItem[];
+  tiers?: KitTier[];
   imageColor?: string;
   imageUrl?: string;
   active: boolean;
@@ -52,23 +50,22 @@ export interface Kit {
   updatedAt: number;
 }
 
-/* ── Frete opcional por venda ───────────────────────────────── */
 export type FreightDirection = "ida" | "volta" | "ida_volta";
 
 export interface FreightOption {
   enabled: boolean;
   direction: FreightDirection;
   price: number;
-  address?: string;          // endereço de entrega/coleta
+  address?: string;
 }
 
 export type SaleStatus = "agendado" | "confirmado" | "entregue" | "concluido" | "cancelado";
 
 export interface SaleExtraItem {
   componentId: ID;
-  name: string;              // snapshot do nome do componente
+  name: string;
   quantity: number;
-  unitPrice: number;         // valor cobrado por unidade nessa venda
+  unitPrice: number;
 }
 
 export interface Sale {
@@ -86,6 +83,7 @@ export interface Sale {
   paidAmount: number;
   status: SaleStatus;
   notes?: string;
+  eventPhoto?: string;         // foto registrada após o evento
   source: "manual" | "whatsapp" | "automacao";
   createdAt: number;
 }
@@ -97,7 +95,7 @@ export interface CostEntry {
   id: ID;
   description: string;
   kind: CostKind;
-  category: string;          // ex: "Aluguel", "Marketing", "Mercado"
+  category: string;
   amount: number;
   frequency: CostFrequency;
   date: number;
