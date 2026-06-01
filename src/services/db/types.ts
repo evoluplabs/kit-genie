@@ -129,39 +129,6 @@ export interface Settings {
   goalGrowthPct?: number;     // meta de crescimento % sobre mês anterior
 }
 
-// ── Catálogo white-label (lido pelo pinkloveultimov3) ────────────────────────
-
-export interface CatalogFreight {
-  enabled: boolean;
-  ida: number;
-  volta: number;
-  idaVolta: number;
-  radiusKm: number;
-}
-
-export interface CatalogSocial {
-  whatsapp: string;
-  instagram?: string;
-  tiktok?: string;
-  email?: string;
-}
-
-export interface CatalogConfig {
-  slug: string;             // subdomínio: "loja" em "loja.pinklove.app"
-  businessName: string;
-  tagline: string;
-  logo?: string;            // URL da logo
-  coverPhoto?: string;      // URL da foto de capa do hero
-  primaryColor: string;     // hex — cor primária do tema
-  backgroundColor: string;  // hex — cor de fundo
-  showPrices: boolean;
-  showAvailability: boolean;
-  freight: CatalogFreight;
-  social: CatalogSocial;
-  hiddenKitIds: string[];   // IDs de kits que não aparecem no catálogo público
-  order: string[];          // ordem personalizada de kits (array de IDs)
-}
-
 export interface DbSchema {
   profile: Profile | null;
   settings: Settings;
@@ -169,5 +136,4 @@ export interface DbSchema {
   kits: Kit[];
   sales: Sale[];
   costs: CostEntry[];
-  catalogConfig: CatalogConfig | null;
 }

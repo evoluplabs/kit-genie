@@ -92,6 +92,5 @@ export function seedDb(): DbSchema {
     kits,
     sales,
     costs,
-    catalogConfig: null,
   };
 }
