@@ -1,12 +1,12 @@
 // Repositórios — única porta de entrada para dados.
-// Leitura: síncrona do cache em memória (atualizado por onSnapshot).
+// Leitura: síncrona do cache em memória (atualizado no login e no refresh manual).
 // Escrita: atualiza cache imediatamente + persiste no Firestore em background.
 
 import type {
   Component, CostEntry, DbSchema, Kit, KitTierName, Profile, Sale, Settings,
 } from "./types";
 import {
-  loadDb, notify, subscribe,
+  loadDb, notify, subscribe, refreshDb,
   fsSetComponent, fsDeleteComponent,
   fsSetKit, fsDeleteKit,
   fsSetSale, fsUpdateSaleStatus, fsDeleteSale,
@@ -466,4 +466,5 @@ function startOfDay(ts: number): number {
 }
 
 export const dbSubscribe = subscribe;
+export const dbRefresh = refreshDb;
 export const dbReset = () => read();
