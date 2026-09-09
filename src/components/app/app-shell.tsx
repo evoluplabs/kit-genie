@@ -3,12 +3,13 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard, Package, Boxes, ShoppingBag, Wallet,
   FileBarChart, Settings as SettingsIcon, Menu, X, LogOut,
-  Users, Bell, CalendarClock, RotateCcw, AlertTriangle,
+  Users, Bell, CalendarClock, RotateCcw, AlertTriangle, RefreshCw,
 } from "lucide-react";
+import { toast } from "sonner";
 import { cls, fmtDate } from "@/lib/format";
 import { useAuth } from "@/services/auth/auth-context";
 import { useDb } from "@/hooks/use-db";
-import { salesRepo, type Sale } from "@/services/db";
+import { salesRepo, dbRefresh, type Sale } from "@/services/db";
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
 const NAV: NavItem[] = [
@@ -25,10 +26,26 @@ const NAV: NavItem[] = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open,       setOpen]       = React.useState(false);
   const [notifOpen,  setNotifOpen]  = React.useState(false);
+  const [refreshing, setRefreshing] = React.useState(false);
   const loc = useLocation();
   const { user, signOut } = useAuth();
 
   React.useEffect(() => { setOpen(false); }, [loc.pathname]);
+
+  // Não há mais sincronização em tempo real (custo de leitura no Firestore) — os dados são
+  // buscados no login e sob demanda, por este botão, sempre visível em qualquer tela.
+  const handleRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await dbRefresh();
+      toast.success("Dados atualizados");
+    } catch (e) {
+      console.error("[app-shell] refresh", e);
+      toast.error("Não foi possível atualizar agora. Tente de novo.");
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
 
   /* ── Lembretes: eventos em 48h + retornos vencidos/próximos ── */
   const allSales = useDb(() => salesRepo.list());
@@ -66,6 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="font-bold text-primary-dark">PinkLove</span>
         </Link>
         <div className="flex items-center gap-2">
+          <RefreshButton loading={refreshing} onClick={handleRefresh} />
           <NotifButton count={reminders.length} urgent={urgentCount > 0} onClick={() => setNotifOpen(v => !v)} />
           <button onClick={() => setOpen(v => !v)} className="size-9 grid place-items-center rounded-lg hover:bg-secondary">
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -82,7 +100,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="size-10 bg-primary rounded-xl grid place-items-center text-primary-foreground font-display font-bold text-lg shadow-soft">P</div>
             <span className="font-bold text-primary-dark text-lg">PinkLove</span>
           </Link>
-          <NotifButton count={reminders.length} urgent={urgentCount > 0} onClick={() => setNotifOpen(v => !v)} />
+          <div className="flex items-center gap-1">
+            <RefreshButton loading={refreshing} onClick={handleRefresh} />
+            <NotifButton count={reminders.length} urgent={urgentCount > 0} onClick={() => setNotifOpen(v => !v)} />
+          </div>
         </div>
 
         <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto pt-20 lg:pt-5">
@@ -183,6 +204,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
     </div>
+  );
+}
+
+function RefreshButton({ loading, onClick }: { loading: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading}
+      className="relative size-9 grid place-items-center rounded-xl hover:bg-secondary transition-colors disabled:opacity-50"
+      title="Atualizar dados"
+      aria-label="Atualizar dados"
+    >
+      <RefreshCw className={cls("size-4 text-muted-foreground", loading && "animate-spin")} />
+    </button>
   );
 }
 
