@@ -41,17 +41,21 @@ export async function executeIntent(userId: string, intent: AssistantIntent): Pr
       const saleId = uid();
       const eventTs = new Date(data.eventDate + "T12:00:00").getTime();
 
+      // Campos alinhados com o tipo Sale real (src/services/db/types.ts):
+      // kitNameSnapshot (não kitName), customerName (não clientName), totalPrice (não price),
+      // paidAmount obrigatório, source restrito a "manual"|"whatsapp"|"automacao",
+      // createdAt como number (Date.now()), não FieldValue.serverTimestamp().
       await db().doc(`users/${userId}/sales/${saleId}`).set({
         id: saleId,
         kitId: kit.id,
-        kitName: kit.name,
-        clientName: data.clientName ?? "Cliente",
-        price,
+        kitNameSnapshot: kit.name,
+        customerName: data.clientName ?? "Cliente",
+        totalPrice: price,
+        paidAmount: 0,
         eventDate: eventTs,
         status: "agendado",
-        workType: data.workType ?? "decoracao",
-        source: "assistant",
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        source: "automacao",
+        createdAt: Date.now(),
       });
 
       const resp = [`✅ Venda registrada!`,
@@ -104,9 +108,9 @@ export async function executeIntent(userId: string, intent: AssistantIntent): Pr
         .where("eventDate", ">=", startOfMonth)
         .get();
 
-      const sales = snap.docs.map(d => d.data() as { price?: number; status?: string; clientName?: string });
+      const sales = snap.docs.map(d => d.data() as { totalPrice?: number; status?: string; customerName?: string });
       const active = sales.filter(s => s.status !== "cancelado");
-      const total = active.reduce((acc, s) => acc + (s.price ?? 0), 0);
+      const total = active.reduce((acc, s) => acc + (s.totalPrice ?? 0), 0);
       const month = now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 
       return [
@@ -128,9 +132,9 @@ export async function executeIntent(userId: string, intent: AssistantIntent): Pr
       if (snap.empty) return "Nenhum evento nos próximos dias. A agenda está livre! 🎉";
 
       const lines = snap.docs.map(d => {
-        const s = d.data() as { kitName?: string; clientName?: string; eventDate?: number; status?: string };
+        const s = d.data() as { kitNameSnapshot?: string; customerName?: string; eventDate?: number; status?: string };
         const date = s.eventDate ? fmtDate(new Date(s.eventDate).toISOString().split("T")[0]) : "?";
-        return `• ${date} — ${s.kitName ?? "Kit"} · ${s.clientName ?? "Cliente"} (${s.status ?? "agendado"})`;
+        return `• ${date} — ${s.kitNameSnapshot ?? "Kit"} · ${s.customerName ?? "Cliente"} (${s.status ?? "agendado"})`;
       });
 
       return `📅 Próximos eventos:\n${lines.join("\n")}`;
@@ -140,12 +144,17 @@ export async function executeIntent(userId: string, intent: AssistantIntent): Pr
       if (!data.kitName) return "Qual o nome do novo kit?";
 
       const kitId = uid();
+      // Campos mínimos exigidos pelo tipo Kit real (theme, type, active, updatedAt).
       await db().doc(`users/${userId}/kits/${kitId}`).set({
         id: kitId,
         name: data.kitName,
+        theme: data.kitName,
+        type: "decoracao",
         items: [],
         price: 0,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        active: true,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
       });
 
       return `✅ Kit "${data.kitName}" criado!\nAcesse o app em Kits para adicionar os componentes.`;
