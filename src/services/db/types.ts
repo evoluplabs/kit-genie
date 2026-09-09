@@ -124,6 +124,7 @@ export interface Settings {
   lowStockMultiplier: number;
   goalAmount?: number;
   goalGrowthPct?: number;
+  assistantEnabled: boolean; // liga/desliga o assistente de IA flutuante (AssistantOrb)
 }
 
 export interface DbSchema {
