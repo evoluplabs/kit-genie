@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   User, Bell, MessageCircle, Info, Target, ChevronRight,
   CheckCircle2, AlertTriangle, Eye, EyeOff, ExternalLink,
-  TrendingUp, DollarSign, Trash2,
+  TrendingUp, DollarSign, Trash2, Sparkles,
 } from "lucide-react";
 import { useDb } from "@/hooks/use-db";
 import { profileRepo, settingsRepo, dbReset } from "@/services/db";
@@ -14,7 +14,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/app/settings")({ component: SettingsPage });
 
 /* ─── Tipos de seção ────────────────────────────────────────── */
-type Section = "perfil" | "metas" | "notificacoes" | "whatsapp" | "sobre";
+type Section = "perfil" | "metas" | "notificacoes" | "whatsapp" | "assistente" | "sobre";
 
 function SettingsPage() {
   const profile  = useDb(() => profileRepo.get());
@@ -37,6 +37,7 @@ function SettingsPage() {
               { id: "metas",         icon: <Target className="size-4" />,         label: "Metas do mês" },
               { id: "notificacoes",  icon: <Bell className="size-4" />,           label: "Notificações" },
               { id: "whatsapp",      icon: <MessageCircle className="size-4" />,  label: "WhatsApp Premium" },
+              { id: "assistente",    icon: <Sparkles className="size-4" />,       label: "Assistente IA" },
               { id: "sobre",         icon: <Info className="size-4" />,           label: "Sobre o app" },
             ] as { id: Section; icon: React.ReactNode; label: string }[]
           ).map(item => (
@@ -63,6 +64,7 @@ function SettingsPage() {
           {active === "metas"        && <GoalsSection settings={settings} />}
           {active === "notificacoes" && <NotificationsSection settings={settings} />}
           {active === "whatsapp"     && <WhatsAppSection profile={profile} />}
+          {active === "assistente"   && <AssistantSection settings={settings} />}
           {active === "sobre"        && <AboutSection />}
         </div>
       </div>
@@ -426,6 +428,30 @@ function WhatsAppSection({ profile }: { profile: any }) {
   );
 }
 
+/* ─── Seção: Assistente IA ──────────────────────────────────── */
+function AssistantSection({ settings }: { settings: any }) {
+  return (
+    <SectionCard
+      icon={<Sparkles className="size-4 text-primary" />}
+      title="Assistente IA"
+      badge={{ label: "R$ 9,90/mês", color: "primary" }}
+      desc="Um assistente flutuante, por voz ou texto, que registra vendas, consulta estoque e responde perguntas do seu negócio direto no app."
+    >
+      <div className="rounded-xl bg-surface border border-border p-4 mb-5 space-y-2 text-sm text-muted-foreground">
+        <p className="font-semibold text-foreground text-sm">O que ele faz</p>
+        <p>Você fala ou digita coisas como "vendi o Kit Mickey pro dia 22, cliente Joana, 850 reais" ou "quanto tenho de balão azul?", e ele registra ou responde na hora — sem precisar navegar pelas telas.</p>
+      </div>
+
+      <Toggle
+        label="Ativar assistente flutuante"
+        desc="Mostra o botão do assistente em todas as telas do app, pronto pra usar por voz ou texto."
+        checked={settings.assistantEnabled}
+        onChange={v => { settingsRepo.update({ assistantEnabled: v }); toast.success(v ? "Assistente ativado" : "Assistente desativado"); }}
+      />
+    </SectionCard>
+  );
+}
+
 /* ─── Seção: Sobre ──────────────────────────────────────────── */
 function AboutSection() {
   const reset = () => {
@@ -448,7 +474,7 @@ function AboutSection() {
             { label: "Versão",      value: "1.0.0" },
             { label: "Plataforma",  value: "Web + PWA" },
             { label: "Banco",       value: "Firebase Firestore" },
-            { label: "Sincronismo", value: "Tempo real" },
+            { label: "Sincronismo", value: "Sob demanda" },
           ].map(r => (
             <div key={r.label} className="rounded-xl bg-surface border border-border p-3">
               <p className="text-[10px] font-bold uppercase tracking-wider opacity-50 mb-1">{r.label}</p>
@@ -459,7 +485,7 @@ function AboutSection() {
 
         <div className="rounded-xl bg-blue-50 border border-blue-100 p-4 text-blue-800 text-xs space-y-1">
           <p className="font-semibold">💾 Seus dados estão seguros</p>
-          <p>Tudo é salvo automaticamente na nuvem. Se fechar o app, seu celular travar ou a internet cair, nenhum dado é perdido — tudo fica guardado e sincroniza quando a conexão voltar.</p>
+          <p>Tudo é salvo automaticamente na nuvem. Suas ações (cadastrar, editar, excluir) aparecem na hora; use o botão "Atualizar" no topo para trazer mudanças feitas por outro dispositivo ou pelo bot do WhatsApp.</p>
         </div>
 
         <div className="pt-2 border-t border-border">
