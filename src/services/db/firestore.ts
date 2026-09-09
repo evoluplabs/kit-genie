@@ -1,10 +1,12 @@
 // Camada de sincronização com Firestore.
 // Mantém cache em memória para que os repos continuem síncronos.
-// Escrita vai para Firestore em background; onSnapshot atualiza o cache.
+// Escrita vai para Firestore em background; leitura é sob demanda — no login
+// e a cada clique no botão "Atualizar" (sem listeners em tempo real, de propósito:
+// reduz custo de leitura e é suficiente já que cada usuária gerencia seu próprio dia).
 
 import {
-  collection, doc, onSnapshot, setDoc, deleteDoc, updateDoc,
-  getDocs, getDoc, writeBatch, type Unsubscribe,
+  collection, doc, setDoc, deleteDoc, updateDoc,
+  getDocs, getDoc, writeBatch,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Component, Kit, Sale, CostEntry, Profile, Settings, DbSchema } from "./types";
@@ -13,7 +15,6 @@ import type { Component, Kit, Sale, CostEntry, Profile, Settings, DbSchema } fro
 
 let cache: DbSchema = defaultSchema();
 let currentUserId: string | null = null;
-let unsubscribers: Unsubscribe[] = [];
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
@@ -36,50 +37,23 @@ export function loadDb(): DbSchema {
 export async function initUserDb(userId: string): Promise<void> {
   if (currentUserId === userId) return;
 
-  // Encerra listeners do usuário anterior
-  unsubscribers.forEach((u) => u());
-  unsubscribers = [];
   currentUserId = userId;
   cache = defaultSchema();
 
-  // Carrega todos os dados uma vez para evitar flash de tela vazia
+  // Única leitura completa no login — sem listeners em tempo real.
   await loadAllOnce(userId);
-
-  // Listeners em tempo real — mantêm o cache atualizado
-  unsubscribers.push(
-    onSnapshot(collection(db, "users", userId, "components"), (snap) => {
-      cache.components = snap.docs.map((d) => d.data() as Component);
-      notify();
-    }),
-    onSnapshot(collection(db, "users", userId, "kits"), (snap) => {
-      cache.kits = snap.docs.map((d) => d.data() as Kit);
-      notify();
-    }),
-    onSnapshot(collection(db, "users", userId, "sales"), (snap) => {
-      cache.sales = snap.docs.map((d) => d.data() as Sale);
-      notify();
-    }),
-    onSnapshot(collection(db, "users", userId, "costs"), (snap) => {
-      cache.costs = snap.docs.map((d) => d.data() as CostEntry);
-      notify();
-    }),
-    onSnapshot(doc(db, "users", userId, "meta", "profile"), (snap) => {
-      cache.profile = snap.exists() ? (snap.data() as Profile) : null;
-      notify();
-    }),
-    onSnapshot(doc(db, "users", userId, "meta", "settings"), (snap) => {
-      if (snap.exists()) cache.settings = snap.data() as Settings;
-      notify();
-    }),
-  );
 }
 
 export function teardownUserDb(): void {
-  unsubscribers.forEach((u) => u());
-  unsubscribers = [];
   currentUserId = null;
   cache = defaultSchema();
   notify();
+}
+
+// Busca os dados de novo sob demanda — usado pelo botão "Atualizar" da interface.
+export async function refreshDb(): Promise<void> {
+  if (!currentUserId) return;
+  await loadAllOnce(currentUserId);
 }
 
 async function loadAllOnce(userId: string): Promise<void> {
