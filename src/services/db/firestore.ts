@@ -70,7 +70,7 @@ async function loadAllOnce(userId: string): Promise<void> {
   cache.sales = sales.docs.map((d) => d.data() as Sale);
   cache.costs = costs.docs.map((d) => d.data() as CostEntry);
   if (profileSnap.exists()) cache.profile = profileSnap.data() as Profile;
-  if (settingsSnap.exists()) cache.settings = settingsSnap.data() as Settings;
+  if (settingsSnap.exists()) cache.settings = { ...cache.settings, ...(settingsSnap.data() as Settings) };
   notify();
 }
 
@@ -150,6 +150,7 @@ function defaultSchema(): DbSchema {
       notifyWeeklyReport: true,
       currency: "BRL",
       lowStockMultiplier: 1,
+      assistantEnabled: false,
     },
     components: [],
     kits: [],
