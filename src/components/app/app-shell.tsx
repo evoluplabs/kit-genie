@@ -9,7 +9,8 @@ import { toast } from "sonner";
 import { cls, fmtDate } from "@/lib/format";
 import { useAuth } from "@/services/auth/auth-context";
 import { useDb } from "@/hooks/use-db";
-import { salesRepo, dbRefresh, type Sale } from "@/services/db";
+import { salesRepo, settingsRepo, dbRefresh, type Sale } from "@/services/db";
+import { AssistantOrb } from "@/components/app/assistant-orb";
 
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
 const NAV: NavItem[] = [
@@ -46,6 +47,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       setRefreshing(false);
     }
   }, []);
+
+  const settings = useDb(() => settingsRepo.get());
 
   /* ── Lembretes: eventos em 48h + retornos vencidos/próximos ── */
   const allSales = useDb(() => salesRepo.list());
@@ -203,6 +206,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main className="flex-1 min-w-0 pt-14 lg:pt-0">
         {children}
       </main>
+
+      {settings.assistantEnabled && <AssistantOrb />}
     </div>
   );
 }
