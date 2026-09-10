@@ -12,6 +12,23 @@ A pesquisa de mercado confirmou o encaixe e trouxe três achados que mudam o des
 
 Validação de preço: planilhas de precificação/estoque para nail já vendem R$ 17–150 em pagamento único no Hotmart — elas pagam por isso e têm aversão a mensalidade.
 
+## Antes de começar (checklist para a sessão nova)
+
+1. **Verificar o estado atual do `AlveDev/designMika`** antes de escrever qualquer coisa — não assumir que está vazio. Rodar `git clone`/explorar o conteúdo primeiro. Se já existir algo (scaffold do Lovable, protótipo, etc.), reconciliar com este plano em vez de sobrescrever.
+2. **Método recomendado para trazer o código do `kit-genie`**: esta sessão que escreveu o plano nunca teve acesso de escrita simultâneo aos dois repositórios (só leitura em `kit-genie`), por isso todo o trabalho de hoje foi feito arquivo por arquivo via API do GitHub. A sessão nova tem acesso real aos dois — o caminho mais rápido e seguro é:
+   ```bash
+   git clone https://github.com/AlveDev/designMika.git
+   cd designMika
+   git remote add kit-genie https://github.com/AlveDev/kit-genie.git
+   git fetch kit-genie claude/optimistic-cannon-NFh28
+   # trazer arquivos específicos da lista "Copiar literal" abaixo, ex.:
+   git checkout kit-genie/claude/optimistic-cannon-NFh28 -- src/components/ui
+   git checkout kit-genie/claude/optimistic-cannon-NFh28 -- src/lib
+   # etc — depois `git commit` normalmente no designMika
+   ```
+   Isso preserva os arquivos exatamente como estão (sem risco de erro de transcrição) e é muito mais rápido que recriar cada componente via edição manual.
+3. **Ler este arquivo inteiro antes de agir**, incluindo o apêndice com os dados brutos da pesquisa de mercado no final — evita ter que repetir a pesquisa quando chegar a hora de escrever `seed.ts` (F0) ou a copy da landing (F3).
+
 ## Decisões já tomadas
 
 - **Foco do primeiro ciclo**: app funcional para a esposa usar de verdade (ela é a primeira usuária real). Landing/Hotmart ficam para depois.
@@ -152,6 +169,69 @@ Ao final da F1, testar o fluxo completo no app rodando (`npm run dev`), em viewp
 6. Marcar outro como "faltou" e confirmar que **não** houve baixa de estoque.
 7. Conferir no Console do Firebase que o volume de leituras por sessão continua baixo (o gêmeo herda o modelo sem tempo real).
 
+## Apêndice: dados brutos da pesquisa de mercado
+
+Contexto adicional para quando for útil (seed de dados na F0, copy da landing na F3) — não é preciso reler tudo agora, é referência.
+
+### Serviços, duração e preço (Brasil, 2025/2026)
+
+| Técnica | Duração | Preço típico |
+|---|---|---|
+| Alongamento em fibra de vidro | 2h30–3h30 | R$ 100–180 |
+| Molde F1 / adesivo | 2h30–3h | R$ 90–160 |
+| Tips (ABS) / gel tip | 1h30–2h30 | R$ 90–170 |
+| Acrigel / polygel | 2h30–3h | R$ 100–180 |
+| Acrílico (monômero + pó) | 2h30–3h | R$ 90–160 |
+| Banho de gel (sobre unha natural) | 1h–2h | — |
+| Blindagem | ~1h | — |
+| Esmaltação em gel | 1h–1h30 | R$ 70–120 |
+| Manicure/pedicure tradicional | 40–90min | R$ 30–55 |
+| Manutenção de alongamento | ~1h30 | 50–70% do valor da aplicação (R$ 60–120) |
+| Remoção | 30–50min | R$ 30–60 |
+| Nail art | — | a partir de R$ 5/unha; francesinha +R$ 5–15 |
+
+### Insumos por categoria
+
+**Consumíveis** (dão baixa por atendimento): desidratador (10ml), primer ácido/bonder (10ml), álcool isopropílico, acetona; gel base clear (10g), gel construtor (potes 14g/24g/30g), fibra de vidro (rolo em metros), tips (caixas de 240un), gel tips por formato, moldes F1, pó acrílico + monômero, top coat (10g); esmalte em gel por cor (frascos 5–15ml), foil, pedrarias, glitter, pó chrome; lixas por granulação (80–120 desbaste, 150–180 modelagem, 240+ acabamento), blocos polidores; luvas, máscara, palitos de laranjeira, algodão, foil de remoção.
+
+**Duráveis** (ativo fixo, não entra no custo por atendimento): cabine LED/UV (36–120W), motor/lixadeira + brocas (diamantadas p/ gel/fibra/acrílico, tungstênio p/ unha natural), pincéis de alongamento, alicate de cutícula, empurrador, pinça, autoclave/estufa.
+
+### Referência de custo por atendimento (alongamento)
+
+Gel construtor R$ 3,60 · primer/desidratador R$ 0,58 · top coat R$ 1,50 · moldes/tips R$ 2,25 · lixas/buffers R$ 2,00 · descartáveis/higienização R$ 4,00 · cor/decoração R$ 2,00 = **R$ 15,93 total**. Fórmula de precificação difundida no nicho: `Preço = (material + custo da hora × tempo real + rateio de custo fixo) × margem (30–50%)`.
+
+### Ciclo de manutenção
+
+Fibra de vidro: 1ª manutenção em 15 dias, depois a cada 20. Gel/molde: 15–21 dias (ideal 3 semanas). Esmaltação em gel/blindagem: 15–21 dias. Banho de gel: 3–4 semanas.
+
+### Concorrentes (Brasil)
+
+| Produto | Preço | Público |
+|---|---|---|
+| Trinks | R$ 76/mês (1–2 prof.), R$ 110/mês (3–4) | Salão/estúdio |
+| Avec | R$ 88,90/mês ("Começando", 1–2 prof.) | Salão |
+| AppBarber/AppBeleza | ~R$ 89–164,50/mês | Barbearia/beleza, equipe |
+| Belasis | não público | Salão/clínica |
+| Simples Agenda | a partir de R$ 39,90/mês, 35 dias grátis | Manicure autônoma |
+| Agendali | a partir de R$ 39,90/mês, 7 dias grátis | Manicure autônoma/pequeno espaço |
+| TopAgenda | grátis + 14 dias trial | Nail designer |
+| Prit | freemium | Manicure |
+| Naild | sistema focado em manicure/nail designer | Sem custo de material por atendimento |
+
+Nenhum dos apps de autônoma (Agendali, Booksy, Minha Agenda, Naild, TopAgenda, Prit) tem ficha técnica de insumo por serviço ou custo de material por atendimento — só existe na camada de salão (Programa Salão, Belasis, Frizzar, Nuvem Gestor, RTM Salão).
+
+### Planilhas vendidas no Hotmart (prova de demanda)
+
+Planilha Controle Financeiro Nail Designer (Lívia Xavier) — financeiro + estoque. Planilha de Precificação para Nails (Divina Unha SP) — 4,9★. eplanilhas.com.br: agenda + estoque + preço por R$ 149,90 (de R$ 299,80), pagamento único. Faixa típica de planilha no nicho: **R$ 17–150, pagamento único**.
+
+### Comportamento e posicionamento
+
+100% mobile-first (WhatsApp + Instagram no celular). Objeção principal é "é complicado demais", não resistência à tecnologia. Aversão a mensalidade é evidente (sucesso das planilhas de pagamento único). Nomes dominantes no mercado usam "Nail"/"Bella" + "Agenda/App" — o espaço de posicionamento em **lucro/custo** está livre; recomendação é evitar mais um nome com "Agenda".
+
+### Ficha de anamnese
+
+Prática já estabelecida no nicho (vendida em blocos de papel de 50/100 folhas). Conteúdo típico: dados pessoais, alergias (esmalte, acrilato, acetona, látex), condições (onicomicose, psoríase, diabetes, gestação, onicofagia), medicamentos, histórico de procedimentos, termo de consentimento assinado. Funciona como prontuário evolutivo (formato/tamanho de tip por dedo, trocas, descolamentos).
+
 ## Nota sobre esta sessão
 
-Este plano foi escrito numa sessão do Claude Code que tinha acesso apenas aos repositórios `AlveDev/kit-genie` e `AlveDev/pinkloveultimov3` — não ao `AlveDev/designMika`, destino real deste projeto. Foi commitado aqui como referência para ser retomado numa sessão nova com acesso ao `designMika`.
+Este plano foi escrito originalmente numa sessão do Claude Code que tinha acesso apenas aos repositórios `AlveDev/kit-genie` e `AlveDev/pinkloveultimov3` — não ao `AlveDev/designMika`, destino real deste projeto. Por isso o plano foi commitado aqui, no `kit-genie`, como ponto de partida documentado para uma sessão nova com acesso a ambos os repositórios. O checklist no início deste arquivo cobre o que essa sessão nova precisa verificar antes de agir.
