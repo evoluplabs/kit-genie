@@ -1,4 +1,4 @@
-# Próximos Passos — Pink Love Gestão pronto para venda
+# Próximos Passos — Decora Gestão pronto para venda
 
 Este documento é um roteiro prático de tudo que precisa ser feito para lançar o produto e começar a vender.
 
@@ -7,7 +7,7 @@ Este documento é um roteiro prático de tudo que precisa ser feito para lançar
 ## ETAPA 1 — Infraestrutura Firebase (obrigatório antes de tudo)
 
 ### 1.1 Habilitar Firebase Authentication
-No [Console Firebase](https://console.firebase.google.com/project/pink-love-gestao):
+No [Console Firebase](https://console.firebase.google.com/project/decora-gestao):
 1. Vá em **Authentication → Sign-in method**
 2. Habilite **Email/senha**
 3. (Opcional) Habilite **Google** para login social
@@ -46,7 +46,7 @@ npx wrangler deploy
 
 Após o deploy, você terá uma URL tipo `https://tanstack-start-app.<seu-subdominio>.workers.dev`.
 
-Para usar domínio próprio (ex: `app.pinklovegestao.com.br`):
+Para usar domínio próprio (ex: `app.decoragestao.com.br`):
 1. No painel Cloudflare → Workers → seu worker → **Custom Domains**
 2. Adicione o domínio desejado
 
@@ -75,7 +75,7 @@ Após a compra na Hotmart, o cliente precisa acessar o sistema. Fluxo recomendad
 
 ## ETAPA 4 — Configurar domínio personalizado
 
-Compre um domínio (ex: `pinklovegestao.com.br`) e:
+Compre um domínio (ex: `decoragestao.com.br`) e:
 1. Adicione como Custom Domain no Cloudflare Workers
 2. Atualize as configurações de **Authorized Domains** no Firebase Authentication para incluir o novo domínio
 
@@ -107,7 +107,7 @@ O backend já está pronto. Para ativar por cliente:
 2. O cliente cria uma **instância** e escaneia o QR Code para conectar o WhatsApp
 3. Nas configurações da instância Z-API, o cliente configura o webhook:
    ```
-   https://us-central1-pink-love-gestao.cloudfunctions.net/whatsappWebhook
+   https://us-central1-decora-gestao.cloudfunctions.net/whatsappWebhook
    ```
 4. O cliente insere o **Instance ID** e o **Token** nas Configurações do app (seção WhatsApp Premium)
 5. O bot começa a responder automaticamente

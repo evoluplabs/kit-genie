@@ -54,7 +54,7 @@ function CatalogPage() {
     }
   };
 
-  const catalogUrl = cfg.slug ? `https://${cfg.slug}.pinklove.app` : null;
+  const catalogUrl = cfg.slug ? `https://${cfg.slug}.decoragestao.app` : null;
 
   // Ordenação e visibilidade de kits
   const activeKits   = allKits.filter(k => k.active);
@@ -106,7 +106,7 @@ function CatalogPage() {
               className="inp flex-1"
               placeholder="seunegocio"
             />
-            <span className="text-sm text-muted-foreground whitespace-nowrap">.pinklove.app</span>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">.decoragestao.app</span>
           </div>
           {catalogUrl && (
             <a href={catalogUrl} target="_blank" rel="noreferrer"

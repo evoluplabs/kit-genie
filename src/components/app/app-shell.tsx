@@ -33,8 +33,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* mobile topbar */}
       <header className="lg:hidden fixed top-0 inset-x-0 z-40 h-14 bg-card border-b border-border flex items-center justify-between px-4">
         <Link to="/app" className="flex items-center gap-2">
-          <div className="size-8 bg-primary rounded-lg grid place-items-center text-primary-foreground font-display font-bold">P</div>
-          <span className="font-bold text-primary-dark">PinkLove</span>
+          <div className="size-8 bg-primary rounded-lg grid place-items-center text-primary-foreground font-display font-bold">D</div>
+          <span className="font-bold text-primary-dark">Decora</span>
         </Link>
         <button onClick={() => setOpen(v => !v)} className="size-9 grid place-items-center rounded-lg hover:bg-secondary">
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -47,8 +47,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       )}>
         <div className="hidden lg:flex h-20 items-center px-6 border-b border-sidebar-border">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="size-10 bg-primary rounded-xl grid place-items-center text-primary-foreground font-display font-bold text-lg shadow-soft">P</div>
-            <span className="font-bold text-primary-dark text-lg">PinkLove</span>
+            <div className="size-10 bg-primary rounded-xl grid place-items-center text-primary-foreground font-display font-bold text-lg shadow-soft">D</div>
+            <span className="font-bold text-primary-dark text-lg">Decora</span>
           </Link>
         </div>
 

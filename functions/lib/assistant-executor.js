@@ -167,11 +167,11 @@ async function executeIntent(userId, intent) {
         default:
             return [
                 "Não entendi o comando. Tente algo como:",
-                "• ", Vendi, o, Kit, Mickey, pro, dia, 22, cliente, Joana, 850, reais, "",
-                "• ", Comprei, 30, balões, rosa, "",
-                "• ", Quanto, tenho, de, balão, azul ? "" : ,
-                "• ", Faturamento, desse, mês, "",
-                "• ", Próximos, eventos, "",
+                "• Vendi o Kit Mickey pro dia 22, cliente Joana, 850 reais",
+                "• Comprei 30 balões rosa",
+                "• Quanto tenho de balão azul?",
+                "• Faturamento desse mês",
+                "• Próximos eventos",
             ].join("\n");
     }
 }

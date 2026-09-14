@@ -3,7 +3,7 @@ import { Mic, MicOff, Send, X, Sparkles, Loader2 } from "lucide-react";
 import { cls } from "@/lib/format";
 import { auth } from "@/lib/firebase";
 
-const ASSISTANT_URL = "https://us-central1-pink-love-gestao.cloudfunctions.net/assistant";
+const ASSISTANT_URL = "https://us-central1-decora-gestao.cloudfunctions.net/assistant";
 
 type Message = { role: "user" | "assistant"; text: string };
 
@@ -158,7 +158,7 @@ export function AssistantOrb() {
               <Sparkles className="size-4" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-bold">Assistente Pink Love</div>
+              <div className="text-sm font-bold">Assistente Decora</div>
               <div className="text-[10px] opacity-70">Voz ou texto — em português</div>
             </div>
             <button

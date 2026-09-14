@@ -1,4 +1,4 @@
-# Pink Love Gestão
+# Decora Gestão
 
 > Sistema completo de gestão para decoradoras de festas — kits, estoque, vendas, finanças e automação WhatsApp.
 
@@ -6,7 +6,7 @@
 
 ## O que é
 
-**Pink Love Gestão** é um SaaS voltado para o mercado de decoração de festas no Brasil (pegue-e-monte, montagem e locação). Ele substitui planilhas por um parceiro digital que:
+**Decora Gestão** é um SaaS voltado para o mercado de decoração de festas no Brasil (pegue-e-monte, montagem e locação). Ele substitui planilhas por um parceiro digital que:
 
 - Gerencia kits com lista de materiais (BOM) e debita o estoque automaticamente a cada venda
 - Exibe alertas de estoque baixo em tempo real
@@ -91,7 +91,7 @@ kit-genie-main/
 
 ### Pré-requisitos
 - Node.js 20+
-- Conta Firebase com projeto `pink-love-gestao`
+- Conta Firebase com projeto `decora-gestao`
 - (Opcional) Conta Z-API para WhatsApp
 
 ### Passos
@@ -185,4 +185,4 @@ Regras de segurança garantem que cada usuária acessa apenas seus próprios dad
 
 ---
 
-*Pink Love Gestão — construído com amor para decoradoras brasileiras.*
+*Decora Gestão — construído com amor para decoradoras brasileiras.*

@@ -129,7 +129,7 @@ export interface Settings {
   goalGrowthPct?: number;     // meta de crescimento % sobre mês anterior
 }
 
-// ── Catálogo white-label (lido pelo pinkloveultimov3) ────────────────────────
+// ── Catálogo white-label (lido pelo app da vitrine do cliente) ────────────────
 
 export interface CatalogFreight {
   enabled: boolean;
@@ -147,7 +147,7 @@ export interface CatalogSocial {
 }
 
 export interface CatalogConfig {
-  slug: string;             // subdomínio: "loja" em "loja.pinklove.app"
+  slug: string;             // subdomínio: "loja" em "loja.decoragestao.app"
   businessName: string;
   tagline: string;
   logo?: string;            // URL da logo
