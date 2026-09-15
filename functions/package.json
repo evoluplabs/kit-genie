@@ -1,5 +1,5 @@
 {
-  "name": "pink-love-gestao-functions",
+  "name": "decora-gestao-functions",
   "private": true,
   "scripts": {
     "build": "tsc",

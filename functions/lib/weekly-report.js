@@ -84,9 +84,9 @@ exports.weeklyReport = functions.onSchedule({ schedule: "0 11 * * 1", timeZone: 
                 lowStockItems: lowStock.map(c => c.name),
             });
             await transporter.sendMail({
-                from: `"Pink Love Gestão" <${process.env.SMTP_USER}>`,
+                from: `"Decora Gestão" <${process.env.SMTP_USER}>`,
                 to: settings.weeklyReportEmail,
-                subject: `Resumo semanal — ${(_d = profile === null || profile === void 0 ? void 0 : profile.businessName) !== null && _d !== void 0 ? _d : "Pink Love Gestão"}`,
+                subject: `Resumo semanal — ${(_d = profile === null || profile === void 0 ? void 0 : profile.businessName) !== null && _d !== void 0 ? _d : "Decora Gestão"}`,
                 html,
             });
             console.log(`[weekly-report] Enviado para ${settings.weeklyReportEmail}`);
@@ -105,7 +105,7 @@ function buildEmailHtml(data) {
 <body style="font-family:sans-serif;background:#fdf2f8;margin:0;padding:0">
   <div style="max-width:520px;margin:40px auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #f3e8f8">
     <div style="background:linear-gradient(135deg,#c084fc,#e879f9);padding:32px;text-align:center">
-      <h1 style="color:#fff;margin:0;font-size:24px;font-weight:800">Pink Love Gestão</h1>
+      <h1 style="color:#fff;margin:0;font-size:24px;font-weight:800">Decora Gestão</h1>
       <p style="color:rgba(255,255,255,.85);margin:8px 0 0;font-size:14px">Resumo semanal — ${new Date().toLocaleDateString("pt-BR")}</p>
     </div>
     <div style="padding:32px">
@@ -135,7 +135,7 @@ function buildEmailHtml(data) {
       </div>`}
 
       <p style="color:#6b7280;font-size:12px;text-align:center;margin-top:24px">
-        Pink Love Gestão · para descadastrar, desative o resumo semanal nas Configurações.
+        Decora Gestão · para descadastrar, desative o resumo semanal nas Configurações.
       </p>
     </div>
   </div>

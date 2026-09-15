@@ -1,4 +1,4 @@
-# Próximos Passos — Pink Love Gestão pronto para venda
+# Próximos Passos — Decora Gestão pronto para venda
 
 Este documento é um roteiro prático de tudo que precisa ser feito para lançar o produto e começar a vender.
 
@@ -46,7 +46,7 @@ npx wrangler deploy
 
 Após o deploy, você terá uma URL tipo `https://tanstack-start-app.<seu-subdominio>.workers.dev`.
 
-Para usar domínio próprio (ex: `app.pinklovegestao.com.br`):
+Para usar domínio próprio (ex: `app.decoragestao.com.br`):
 1. No painel Cloudflare → Workers → seu worker → **Custom Domains**
 2. Adicione o domínio desejado
 
@@ -75,7 +75,7 @@ Após a compra na Hotmart, o cliente precisa acessar o sistema. Fluxo recomendad
 
 ## ETAPA 4 — Configurar domínio personalizado
 
-Compre um domínio (ex: `pinklovegestao.com.br`) e:
+Compre um domínio (ex: `decoragestao.com.br`) e:
 1. Adicione como Custom Domain no Cloudflare Workers
 2. Atualize as configurações de **Authorized Domains** no Firebase Authentication para incluir o novo domínio
 

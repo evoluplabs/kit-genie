@@ -158,7 +158,7 @@ export function AssistantOrb() {
               <Sparkles className="size-4" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-bold">Assistente Pink Love</div>
+              <div className="text-sm font-bold">Assistente Decora</div>
               <div className="text-[10px] opacity-70">Voz ou texto — em português</div>
             </div>
             <button

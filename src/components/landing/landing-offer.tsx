@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 
-const HOTMART_BASE = import.meta.env.VITE_HOTMART_URL_BASE ?? "https://hotmart.com/produto/pink-love-gestao-base";
-const HOTMART_PREMIUM = import.meta.env.VITE_HOTMART_URL_PREMIUM ?? "https://hotmart.com/produto/pink-love-gestao-premium";
+const HOTMART_BASE = import.meta.env.VITE_HOTMART_URL_BASE ?? "https://hotmart.com/produto/decora-gestao-base";
+const HOTMART_PREMIUM = import.meta.env.VITE_HOTMART_URL_PREMIUM ?? "https://hotmart.com/produto/decora-gestao-premium";
 
 const INCLUSO = [
   "Acesso vitalício ao sistema (sem mensalidade)",

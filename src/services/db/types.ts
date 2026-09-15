@@ -121,10 +121,10 @@ export interface Settings {
   notifyWeeklyReport: boolean;
   weeklyReportEmail?: string;
   currency: "BRL";
-  lowStockMultiplier: number;
-  goalAmount?: number;
-  goalGrowthPct?: number;
-  assistantEnabled: boolean; // liga/desliga o assistente de IA flutuante (AssistantOrb)
+  lowStockMultiplier: number; // alerta quando stock <= minStock * multiplier
+  goalAmount?: number;        // meta de faturamento mensal (valor fixo)
+  goalGrowthPct?: number;     // meta de crescimento % sobre mês anterior
+  assistantEnabled: boolean;  // liga/desliga o assistente de IA flutuante (AssistantOrb)
 }
 
 export interface DbSchema {

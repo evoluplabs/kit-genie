@@ -154,7 +154,7 @@ function Onboarding() {
       workTypes,
       onboardingCompleted: true,
     });
-    toast.success("Bem-vinda ao Pink Love Gestão! 💕");
+    toast.success("Bem-vinda ao Decora Gestão! 🎉");
     nav({ to: "/app" });
   };
 
@@ -172,7 +172,7 @@ function Onboarding() {
           <div className="size-8 rounded-xl bg-white/80 backdrop-blur grid place-items-center shadow-sm">
             <Sparkles className="size-4" style={{ color: panel.accent }} />
           </div>
-          <span className="font-bold text-gray-800 text-sm tracking-wide">Pink Love Gestão</span>
+          <span className="font-bold text-gray-800 text-sm tracking-wide">Decora Gestão</span>
         </div>
 
         <div className="relative z-10 space-y-6 py-12 lg:py-0">

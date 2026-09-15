@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseIntent = parseIntent;
 const sdk_1 = __importDefault(require("@anthropic-ai/sdk"));
-const SYSTEM_PROMPT = `Você é o assistente de gestão do Pink Love Gestão, um sistema para decoradoras de festas brasileiras.
+const SYSTEM_PROMPT = `Você é o assistente de gestão do Decora Gestão, um sistema para decoradoras de festas brasileiras.
 Analise o comando da usuária e retorne um JSON com a intenção detectada.
 
 Actions disponíveis:

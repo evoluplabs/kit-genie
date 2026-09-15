@@ -465,7 +465,7 @@ function AboutSection() {
   return (
     <SectionCard
       icon={<Info className="size-4 text-primary" />}
-      title="Sobre o Pink Love Gestão"
+      title="Sobre o Decora Gestão"
       desc="Informações sobre o sistema."
     >
       <div className="space-y-4 text-sm text-muted-foreground">

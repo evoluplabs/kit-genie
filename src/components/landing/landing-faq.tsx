@@ -5,7 +5,7 @@ import {
 const QA = [
   {
     q: "Preciso entender de tecnologia pra usar?",
-    a: "Não. O sistema foi criado justamente pra decoradoras que cansaram de planilha. O onboarding te conduz passo a passo no cadastro dos primeiros kits e componentes — se você usa WhatsApp, você usa o Pink Love.",
+    a: "Não. O sistema foi criado justamente pra decoradoras que cansaram de planilha. O onboarding te conduz passo a passo no cadastro dos primeiros kits e componentes — se você usa WhatsApp, você usa o Decora Gestão.",
   },
   {
     q: "Como funciona o assistente por voz?",
@@ -21,7 +21,7 @@ const QA = [
   },
   {
     q: "Já uso planilha e funciona. Por que mudar?",
-    a: "Planilha não avisa quando vai faltar peça, não bloqueia datas duplicadas e não calcula o lucro real separando custos pessoais dos empresariais. Você sabe quanto ganhou de verdade no último mês? O Pink Love mostra isso com um clique.",
+    a: "Planilha não avisa quando vai faltar peça, não bloqueia datas duplicadas e não calcula o lucro real separando custos pessoais dos empresariais. Você sabe quanto ganhou de verdade no último mês? O Decora Gestão mostra isso com um clique.",
   },
   {
     q: "Posso exportar meus dados pro contador?",

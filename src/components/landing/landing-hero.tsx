@@ -66,7 +66,7 @@ export function LandingHero() {
               <span className="size-2.5 rounded-full bg-rose-300" />
               <span className="size-2.5 rounded-full bg-amber-300" />
               <span className="size-2.5 rounded-full bg-emerald-300" />
-              <span className="ml-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Painel · Pink Love</span>
+              <span className="ml-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Painel · Decora</span>
             </div>
             <div className="p-6 grid grid-cols-2 gap-4">
               <div className="col-span-2 rounded-2xl bg-primary-dark text-primary-foreground p-5">

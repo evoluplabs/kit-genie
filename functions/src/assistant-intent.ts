@@ -22,7 +22,7 @@ export interface AssistantIntent {
   };
 }
 
-const SYSTEM_PROMPT = `Você é o assistente de gestão do Pink Love Gestão, um sistema para decoradoras de festas brasileiras.
+const SYSTEM_PROMPT = `Você é o assistente de gestão do Decora Gestão, um sistema para decoradoras de festas brasileiras.
 Analise o comando da usuária e retorne um JSON com a intenção detectada.
 
 Actions disponíveis:

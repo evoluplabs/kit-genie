@@ -50,7 +50,7 @@ export function LandingAudioBot() {
               <span className="size-2.5 rounded-full bg-rose-300" />
               <span className="size-2.5 rounded-full bg-amber-300" />
               <span className="size-2.5 rounded-full bg-emerald-300" />
-              <span className="ml-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Pink Love · Vendas</span>
+              <span className="ml-3 text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Decora · Vendas</span>
             </div>
 
             {/* Assistant panel */}
@@ -58,7 +58,7 @@ export function LandingAudioBot() {
               <div className="bg-primary-dark rounded-2xl overflow-hidden mb-4">
                 <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10">
                   <div className="size-6 rounded-full bg-white/20 grid place-items-center text-xs">✨</div>
-                  <span className="text-xs text-white font-bold">Assistente Pink Love</span>
+                  <span className="text-xs text-white font-bold">Assistente Decora</span>
                   <span className="ml-auto text-[10px] text-white/60">voz ou texto</span>
                 </div>
                 <div className="p-3 space-y-2 max-h-52 overflow-hidden">
