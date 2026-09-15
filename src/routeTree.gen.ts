@@ -21,7 +21,6 @@ import { Route as AppReportsRouteImport } from './routes/app.reports'
 import { Route as AppOnboardingRouteImport } from './routes/app.onboarding'
 import { Route as AppKitsRouteImport } from './routes/app.kits'
 import { Route as AppFinanceRouteImport } from './routes/app.finance'
-import { Route as AppCatalogRouteImport } from './routes/app.catalog'
 import { Route as AppCustomersRouteImport } from './routes/app.customers'
 import { Route as AppComponentsRouteImport } from './routes/app.components'
 
@@ -85,11 +84,6 @@ const AppFinanceRoute = AppFinanceRouteImport.update({
   path: '/finance',
   getParentRoute: () => AppRoute,
 } as any)
-const AppCatalogRoute = AppCatalogRouteImport.update({
-  id: '/catalog',
-  path: '/catalog',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppCustomersRoute = AppCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -107,7 +101,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/app/catalog': typeof AppCatalogRoute
   '/app/components': typeof AppComponentsRoute
   '/app/customers': typeof AppCustomersRoute
   '/app/finance': typeof AppFinanceRoute
@@ -123,7 +116,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/app/catalog': typeof AppCatalogRoute
   '/app/components': typeof AppComponentsRoute
   '/app/customers': typeof AppCustomersRoute
   '/app/finance': typeof AppFinanceRoute
@@ -141,7 +133,6 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
-  '/app/catalog': typeof AppCatalogRoute
   '/app/components': typeof AppComponentsRoute
   '/app/customers': typeof AppCustomersRoute
   '/app/finance': typeof AppFinanceRoute
@@ -160,7 +151,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/signup'
-    | '/app/catalog'
     | '/app/components'
     | '/app/customers'
     | '/app/finance'
@@ -176,7 +166,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/signup'
-    | '/app/catalog'
     | '/app/components'
     | '/app/customers'
     | '/app/finance'
@@ -193,7 +182,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/signup'
-    | '/app/catalog'
     | '/app/components'
     | '/app/customers'
     | '/app/finance'
@@ -299,13 +287,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFinanceRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/catalog': {
-      id: '/app/catalog'
-      path: '/catalog'
-      fullPath: '/app/catalog'
-      preLoaderRoute: typeof AppCatalogRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/customers': {
       id: '/app/customers'
       path: '/customers'
@@ -324,7 +305,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppCatalogRoute: typeof AppCatalogRoute
   AppComponentsRoute: typeof AppComponentsRoute
   AppCustomersRoute: typeof AppCustomersRoute
   AppFinanceRoute: typeof AppFinanceRoute
@@ -337,7 +317,6 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppCatalogRoute: AppCatalogRoute,
   AppComponentsRoute: AppComponentsRoute,
   AppCustomersRoute: AppCustomersRoute,
   AppFinanceRoute: AppFinanceRoute,

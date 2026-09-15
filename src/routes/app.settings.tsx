@@ -6,10 +6,11 @@ import {
   TrendingUp, DollarSign, Trash2, Sparkles,
 } from "lucide-react";
 import { useDb } from "@/hooks/use-db";
-import { profileRepo, settingsRepo, dbReset } from "@/services/db";
+import { profileRepo, settingsRepo, dbReset, dbRefresh } from "@/services/db";
 import { brl, cls } from "@/lib/format";
 import { PageHeader } from "@/components/app/app-shell";
 import { toast } from "sonner";
+import { MercadoPagoSubscribeModal } from "@/components/checkout/mercadopago-subscribe-modal";
 
 export const Route = createFileRoute("/app/settings")({ component: SettingsPage });
 
@@ -63,7 +64,7 @@ function SettingsPage() {
           {active === "perfil"       && <ProfileSection profile={profile} />}
           {active === "metas"        && <GoalsSection settings={settings} />}
           {active === "notificacoes" && <NotificationsSection settings={settings} />}
-          {active === "whatsapp"     && <WhatsAppSection profile={profile} />}
+          {active === "whatsapp"     && <WhatsAppSection profile={profile} settings={settings} />}
           {active === "assistente"   && <AssistantSection settings={settings} />}
           {active === "sobre"        && <AboutSection />}
         </div>
@@ -326,11 +327,14 @@ function NotificationsSection({ settings }: { settings: any }) {
 }
 
 /* ─── Seção: WhatsApp ───────────────────────────────────────── */
-function WhatsAppSection({ profile }: { profile: any }) {
+function WhatsAppSection({ profile, settings }: { profile: any; settings: any }) {
   const [zapiInstance, setZapiInstance] = React.useState((profile as any)?.zapiInstance ?? "");
   const [zapiToken,    setZapiToken]    = React.useState((profile as any)?.zapiToken ?? "");
   const [showToken,    setShowToken]    = React.useState(false);
   const [saving,       setSaving]       = React.useState(false);
+  const [checkoutOpen, setCheckoutOpen] = React.useState(false);
+
+  const subscribed = settings?.whatsappPremiumActive === true;
 
   React.useEffect(() => {
     if (profile) {
@@ -356,9 +360,28 @@ function WhatsAppSection({ profile }: { profile: any }) {
     <SectionCard
       icon={<MessageCircle className="size-4 text-emerald-600" />}
       title="WhatsApp Premium"
-      badge={{ label: "R$ 9,90/mês", color: "emerald" }}
+      badge={subscribed ? { label: "Assinatura ativa", color: "emerald" } : { label: "R$ 9,90/mês", color: "emerald" }}
       desc="Conecte seu WhatsApp e o sistema responde orçamentos automaticamente para você, mesmo quando você está ocupada ou dormindo."
     >
+      {!subscribed && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 mb-5 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-sm text-emerald-800">Assine por R$9,90/mês pra liberar o bot de atendimento.</p>
+          <button
+            onClick={() => setCheckoutOpen(true)}
+            className="px-4 py-2 rounded-full bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition-colors"
+          >
+            Assinar agora
+          </button>
+        </div>
+      )}
+
+      <MercadoPagoSubscribeModal
+        product="whatsapp_premium"
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        onSubscribed={() => dbRefresh()}
+      />
+
       {/* Status */}
       <div className={cls(
         "flex items-center gap-3 rounded-xl p-3 mb-5 text-sm",
@@ -430,6 +453,7 @@ function WhatsAppSection({ profile }: { profile: any }) {
 
 /* ─── Seção: Assistente IA ──────────────────────────────────── */
 function AssistantSection({ settings }: { settings: any }) {
+  const [checkoutOpen, setCheckoutOpen] = React.useState(false);
   const subscribed = settings.assistantSubscriptionActive === true;
   const remaining = settings.assistantFreeUsesRemaining ?? 25;
 
@@ -447,14 +471,29 @@ function AssistantSection({ settings }: { settings: any }) {
 
       {!subscribed && (
         <div className={cls(
-          "rounded-xl border p-4 mb-5 text-sm",
+          "rounded-xl border p-4 mb-5 text-sm flex items-center justify-between gap-3 flex-wrap",
           remaining > 0 ? "bg-primary/5 border-primary/20 text-foreground" : "bg-destructive/5 border-destructive/20 text-destructive"
         )}>
-          {remaining > 0
-            ? `Você tem ${remaining} de 25 interações gratuitas restantes (vitalícias — não renovam todo mês).`
-            : "Suas interações gratuitas do Assistente IA acabaram. Assine por R$9,90/mês pra continuar usando."}
+          <span>
+            {remaining > 0
+              ? `Você tem ${remaining} de 25 interações gratuitas restantes (vitalícias — não renovam todo mês).`
+              : "Suas interações gratuitas do Assistente IA acabaram. Assine por R$9,90/mês pra continuar usando."}
+          </span>
+          <button
+            onClick={() => setCheckoutOpen(true)}
+            className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-dark transition-colors shrink-0"
+          >
+            Assinar agora
+          </button>
         </div>
       )}
+
+      <MercadoPagoSubscribeModal
+        product="assistant"
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        onSubscribed={() => dbRefresh()}
+      />
 
       <Toggle
         label="Ativar assistente flutuante"
