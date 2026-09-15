@@ -87,6 +87,7 @@ export function seedDb(): DbSchema {
       notifyWeeklyReport: true,
       currency: "BRL",
       lowStockMultiplier: 1,
+      assistantEnabled: false,
     },
     components,
     kits,
