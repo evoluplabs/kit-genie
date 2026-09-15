@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   User, Bell, MessageCircle, Info, Target, ChevronRight,
   CheckCircle2, AlertTriangle, Eye, EyeOff, ExternalLink,
-  TrendingUp, DollarSign, Trash2, Sparkles,
+  TrendingUp, DollarSign, Trash2, Sparkles, Clock,
 } from "lucide-react";
 import { useDb } from "@/hooks/use-db";
 import { profileRepo, settingsRepo, dbReset, dbRefresh } from "@/services/db";
@@ -11,6 +11,7 @@ import { brl, cls } from "@/lib/format";
 import { PageHeader } from "@/components/app/app-shell";
 import { toast } from "sonner";
 import { MercadoPagoSubscribeModal } from "@/components/checkout/mercadopago-subscribe-modal";
+import { MVP_STATUS, type FeatureStatus } from "@/lib/mvp-status";
 
 export const Route = createFileRoute("/app/settings")({ component: SettingsPage });
 
@@ -506,6 +507,27 @@ function AssistantSection({ settings }: { settings: any }) {
 }
 
 /* ─── Seção: Sobre ──────────────────────────────────────────── */
+const STATUS_STYLE: Record<FeatureStatus, { label: string; box: string; badge: string; icon: React.ReactNode }> = {
+  ready: {
+    label: "Pronto",
+    box: "bg-emerald-50 border-emerald-200",
+    badge: "bg-emerald-100 text-emerald-700",
+    icon: <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />,
+  },
+  pending_credentials: {
+    label: "Falta credencial",
+    box: "bg-amber-50 border-amber-200",
+    badge: "bg-amber-100 text-amber-700",
+    icon: <AlertTriangle className="size-4 text-amber-600 shrink-0 mt-0.5" />,
+  },
+  planned: {
+    label: "Planejado",
+    box: "bg-surface border-border",
+    badge: "bg-secondary text-muted-foreground",
+    icon: <Clock className="size-4 text-muted-foreground shrink-0 mt-0.5" />,
+  },
+};
+
 function AboutSection() {
   const reset = () => {
     if (confirm("Tem certeza? Isso apaga TODOS os seus dados. Esta ação não pode ser desfeita.")) {
@@ -534,6 +556,26 @@ function AboutSection() {
               <p className="font-semibold text-foreground text-sm">{r.value}</p>
             </div>
           ))}
+        </div>
+
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Status do MVP</p>
+          <div className="space-y-2">
+            {MVP_STATUS.map(item => (
+              <div key={item.label} className={cls("rounded-xl border p-3 flex items-start gap-3", STATUS_STYLE[item.status].box)}>
+                {STATUS_STYLE[item.status].icon}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold text-foreground text-sm">{item.label}</p>
+                    <span className={cls("text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0", STATUS_STYLE[item.status].badge)}>
+                      {STATUS_STYLE[item.status].label}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{item.note}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="rounded-xl bg-blue-50 border border-blue-100 p-4 text-blue-800 text-xs space-y-1">
