@@ -43,6 +43,11 @@ const sessions = new Map();
 function sessionKey(userId, phone) {
     return `${userId}:${phone}`;
 }
+// Mesmo algoritmo de geração de ID usado no app (src/services/db/index.ts),
+// para que documentos criados pelo bot fiquem no mesmo formato dos criados pelo app.
+function generateId() {
+    return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
 async function handleMessage(userId, config, fromPhone, text) {
     var _a;
     const key = sessionKey(userId, fromPhone);
@@ -131,10 +136,13 @@ async function handleEscolherData(userId, config, phone, key, session, input) {
 async function handleConfirmar(userId, config, phone, key, session, input, customerPhone) {
     var _a, _b;
     if (input === "sim" || input === "s" || input === "yes") {
-        // Cria rascunho de venda no Firestore
+        // Cria rascunho de venda no Firestore — id gerado explicitamente e gravado dentro do
+        // próprio documento, no mesmo formato usado pelo app (fsSetSale/salesRepo).
         const [dd, mm, yyyy] = ((_a = session.date) !== null && _a !== void 0 ? _a : "").split("/");
         const eventDate = new Date(parseInt(yyyy), parseInt(mm) - 1, parseInt(dd)).getTime();
-        await db.collection(`users/${userId}/sales`).add({
+        const saleId = generateId();
+        await db.doc(`users/${userId}/sales/${saleId}`).set({
+            id: saleId,
             customerName: `WhatsApp ${customerPhone}`,
             customerPhone,
             kitId: session.kitId,

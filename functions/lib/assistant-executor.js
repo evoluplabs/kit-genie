@@ -51,7 +51,7 @@ function findByName(items, name) {
     return items.find(i => i.name.toLowerCase().includes(lower));
 }
 async function executeIntent(userId, intent) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f;
     const { action, data } = intent;
     switch (action) {
         case "register_sale": {
@@ -69,20 +69,24 @@ async function executeIntent(userId, intent) {
             const price = (_b = (_a = data.price) !== null && _a !== void 0 ? _a : kit.price) !== null && _b !== void 0 ? _b : 0;
             const saleId = uid();
             const eventTs = new Date(data.eventDate + "T12:00:00").getTime();
+            // Campos alinhados com o tipo Sale real (src/services/db/types.ts):
+            // kitNameSnapshot (não kitName), customerName (não clientName), totalPrice (não price),
+            // paidAmount obrigatório, source restrito a "manual"|"whatsapp"|"automacao",
+            // createdAt como number (Date.now()), não FieldValue.serverTimestamp().
             await db().doc(`users/${userId}/sales/${saleId}`).set({
                 id: saleId,
                 kitId: kit.id,
-                kitName: kit.name,
-                clientName: (_c = data.clientName) !== null && _c !== void 0 ? _c : "Cliente",
-                price,
+                kitNameSnapshot: kit.name,
+                customerName: (_c = data.clientName) !== null && _c !== void 0 ? _c : "Cliente",
+                totalPrice: price,
+                paidAmount: 0,
                 eventDate: eventTs,
                 status: "agendado",
-                workType: (_d = data.workType) !== null && _d !== void 0 ? _d : "decoracao",
-                source: "assistant",
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                source: "automacao",
+                createdAt: Date.now(),
             });
             const resp = [`✅ Venda registrada!`,
-                `📦 ${kit.name} · ${fmtDate(data.eventDate)} · ${(_e = data.clientName) !== null && _e !== void 0 ? _e : "Cliente"}`,
+                `📦 ${kit.name} · ${fmtDate(data.eventDate)} · ${(_d = data.clientName) !== null && _d !== void 0 ? _d : "Cliente"}`,
                 price > 0 ? `💰 ${fmtBRL(price)}` : "",
                 `Status: agendado — acesse o app para confirmar.`,].filter(Boolean).join("\n");
             return resp;
@@ -97,7 +101,7 @@ async function executeIntent(userId, intent) {
             const comp = findByName(items, data.componentName);
             if (!comp)
                 return `Não encontrei o componente "${data.componentName}". Cadastre-o primeiro no app.`;
-            const newStock = ((_f = comp.stock) !== null && _f !== void 0 ? _f : 0) + data.quantity;
+            const newStock = ((_e = comp.stock) !== null && _e !== void 0 ? _e : 0) + data.quantity;
             await db().doc(`users/${userId}/components/${comp.id}`).update({
                 stock: newStock,
                 updatedAt: Date.now(),
@@ -113,7 +117,7 @@ async function executeIntent(userId, intent) {
             if (!comp)
                 return `Não encontrei o componente "${data.componentName}". Verifique o nome no app.`;
             const status = comp.stock <= comp.minStock ? "⚠️ Estoque baixo" : "✅ OK";
-            return `${comp.name}\nEstoque: ${comp.stock} unidades\nMínimo: ${(_g = comp.minStock) !== null && _g !== void 0 ? _g : 0} · ${status}`;
+            return `${comp.name}\nEstoque: ${comp.stock} unidades\nMínimo: ${(_f = comp.minStock) !== null && _f !== void 0 ? _f : 0} · ${status}`;
         }
         case "query_revenue": {
             const now = new Date();
@@ -124,7 +128,7 @@ async function executeIntent(userId, intent) {
                 .get();
             const sales = snap.docs.map(d => d.data());
             const active = sales.filter(s => s.status !== "cancelado");
-            const total = active.reduce((acc, s) => { var _a; return acc + ((_a = s.price) !== null && _a !== void 0 ? _a : 0); }, 0);
+            const total = active.reduce((acc, s) => { var _a; return acc + ((_a = s.totalPrice) !== null && _a !== void 0 ? _a : 0); }, 0);
             const month = now.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
             return [
                 `📊 Faturamento — ${month}`,
@@ -146,7 +150,7 @@ async function executeIntent(userId, intent) {
                 var _a, _b, _c;
                 const s = d.data();
                 const date = s.eventDate ? fmtDate(new Date(s.eventDate).toISOString().split("T")[0]) : "?";
-                return `• ${date} — ${(_a = s.kitName) !== null && _a !== void 0 ? _a : "Kit"} · ${(_b = s.clientName) !== null && _b !== void 0 ? _b : "Cliente"} (${(_c = s.status) !== null && _c !== void 0 ? _c : "agendado"})`;
+                return `• ${date} — ${(_a = s.kitNameSnapshot) !== null && _a !== void 0 ? _a : "Kit"} · ${(_b = s.customerName) !== null && _b !== void 0 ? _b : "Cliente"} (${(_c = s.status) !== null && _c !== void 0 ? _c : "agendado"})`;
             });
             return `📅 Próximos eventos:\n${lines.join("\n")}`;
         }
@@ -154,12 +158,17 @@ async function executeIntent(userId, intent) {
             if (!data.kitName)
                 return "Qual o nome do novo kit?";
             const kitId = uid();
+            // Campos mínimos exigidos pelo tipo Kit real (theme, type, active, updatedAt).
             await db().doc(`users/${userId}/kits/${kitId}`).set({
                 id: kitId,
                 name: data.kitName,
+                theme: data.kitName,
+                type: "decoracao",
                 items: [],
                 price: 0,
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                active: true,
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
             });
             return `✅ Kit "${data.kitName}" criado!\nAcesse o app em Kits para adicionar os componentes.`;
         }

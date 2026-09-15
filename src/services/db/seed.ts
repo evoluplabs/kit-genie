@@ -88,6 +88,8 @@ export function seedDb(): DbSchema {
       currency: "BRL",
       lowStockMultiplier: 1,
       assistantEnabled: false,
+      assistantFreeUsesRemaining: 25,
+      assistantSubscriptionActive: false,
     },
     components,
     kits,

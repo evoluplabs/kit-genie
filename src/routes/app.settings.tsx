@@ -430,17 +430,31 @@ function WhatsAppSection({ profile }: { profile: any }) {
 
 /* ─── Seção: Assistente IA ──────────────────────────────────── */
 function AssistantSection({ settings }: { settings: any }) {
+  const subscribed = settings.assistantSubscriptionActive === true;
+  const remaining = settings.assistantFreeUsesRemaining ?? 25;
+
   return (
     <SectionCard
       icon={<Sparkles className="size-4 text-primary" />}
       title="Assistente IA"
-      badge={{ label: "R$ 9,90/mês", color: "primary" }}
+      badge={subscribed ? { label: "Assinatura ativa", color: "emerald" } : { label: "R$ 9,90/mês", color: "primary" }}
       desc="Um assistente flutuante, por voz ou texto, que registra vendas, consulta estoque e responde perguntas do seu negócio direto no app."
     >
       <div className="rounded-xl bg-surface border border-border p-4 mb-5 space-y-2 text-sm text-muted-foreground">
         <p className="font-semibold text-foreground text-sm">O que ele faz</p>
         <p>Você fala ou digita coisas como "vendi o Kit Mickey pro dia 22, cliente Joana, 850 reais" ou "quanto tenho de balão azul?", e ele registra ou responde na hora — sem precisar navegar pelas telas.</p>
       </div>
+
+      {!subscribed && (
+        <div className={cls(
+          "rounded-xl border p-4 mb-5 text-sm",
+          remaining > 0 ? "bg-primary/5 border-primary/20 text-foreground" : "bg-destructive/5 border-destructive/20 text-destructive"
+        )}>
+          {remaining > 0
+            ? `Você tem ${remaining} de 25 interações gratuitas restantes (vitalícias — não renovam todo mês).`
+            : "Suas interações gratuitas do Assistente IA acabaram. Assine por R$9,90/mês pra continuar usando."}
+        </div>
+      )}
 
       <Toggle
         label="Ativar assistente flutuante"

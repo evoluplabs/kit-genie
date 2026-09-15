@@ -122,7 +122,10 @@ export async function fsSetProfile(p: Profile): Promise<void> {
 }
 
 export async function fsSetSettings(s: Settings): Promise<void> {
-  await setDoc(doc(db, "users", userPath(), "meta", "settings"), s);
+  // merge: true — evita que uma escrita do frontend (feita a partir de um cache local
+  // desatualizado, já que não há listener em tempo real) sobrescreva campos geridos
+  // pelo backend, como a cota do Assistente IA e o status de assinatura.
+  await setDoc(doc(db, "users", userPath(), "meta", "settings"), s, { merge: true });
 }
 
 // Seed inicial: popula Firestore com dados de exemplo (chamado no onboarding se DB vazio)
@@ -151,6 +154,8 @@ function defaultSchema(): DbSchema {
       currency: "BRL",
       lowStockMultiplier: 1,
       assistantEnabled: false,
+      assistantFreeUsesRemaining: 25,
+      assistantSubscriptionActive: false,
     },
     components: [],
     kits: [],

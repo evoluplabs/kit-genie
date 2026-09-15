@@ -125,6 +125,15 @@ export interface Settings {
   goalAmount?: number;        // meta de faturamento mensal (valor fixo)
   goalGrowthPct?: number;     // meta de crescimento % sobre mês anterior
   assistantEnabled: boolean;  // liga/desliga o assistente de IA flutuante (AssistantOrb)
+
+  // Cobrança do Assistente IA (R$9,90/mês) — geridos pelo backend (functions/src/assistant.ts
+  // e functions/src/payments/), o frontend só lê. assistantFreeUsesRemaining é uma cota
+  // vitalícia única (nunca reseta); assistantSubscriptionActive vem do webhook de pagamento.
+  assistantFreeUsesRemaining?: number;
+  assistantSubscriptionActive?: boolean;
+
+  // Cobrança do WhatsApp Premium — mesmo padrão, também gerido pelo backend.
+  whatsappPremiumActive?: boolean;
 }
 
 export interface DbSchema {
