@@ -7,7 +7,7 @@ Este documento é um roteiro prático de tudo que precisa ser feito para lançar
 ## ETAPA 1 — Infraestrutura Firebase (obrigatório antes de tudo)
 
 ### 1.1 Habilitar Firebase Authentication
-No [Console Firebase](https://console.firebase.google.com/project/decora-gestao):
+No [Console Firebase](https://console.firebase.google.com/project/pink-love-gestao):
 1. Vá em **Authentication → Sign-in method**
 2. Habilite **Email/senha**
 3. (Opcional) Habilite **Google** para login social
@@ -107,7 +107,7 @@ O backend já está pronto. Para ativar por cliente:
 2. O cliente cria uma **instância** e escaneia o QR Code para conectar o WhatsApp
 3. Nas configurações da instância Z-API, o cliente configura o webhook:
    ```
-   https://us-central1-decora-gestao.cloudfunctions.net/whatsappWebhook
+   https://us-central1-pink-love-gestao.cloudfunctions.net/whatsappWebhook
    ```
 4. O cliente insere o **Instance ID** e o **Token** nas Configurações do app (seção WhatsApp Premium)
 5. O bot começa a responder automaticamente

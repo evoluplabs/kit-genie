@@ -417,7 +417,7 @@ function WhatsAppSection({ profile }: { profile: any }) {
       <div className="mt-4 rounded-xl bg-surface border border-border p-3">
         <p className="text-[11px] font-bold text-muted-foreground mb-1">URL do Webhook — cole no painel Z-API</p>
         <code className="text-xs font-mono break-all text-foreground">
-          https://us-central1-decora-gestao.cloudfunctions.net/whatsappWebhook
+          https://us-central1-pink-love-gestao.cloudfunctions.net/whatsappWebhook
         </code>
       </div>
 

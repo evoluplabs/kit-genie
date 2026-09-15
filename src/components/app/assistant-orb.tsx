@@ -3,7 +3,7 @@ import { Mic, MicOff, Send, X, Sparkles, Loader2 } from "lucide-react";
 import { cls } from "@/lib/format";
 import { auth } from "@/lib/firebase";
 
-const ASSISTANT_URL = "https://us-central1-decora-gestao.cloudfunctions.net/assistant";
+const ASSISTANT_URL = "https://us-central1-pink-love-gestao.cloudfunctions.net/assistant";
 
 type Message = { role: "user" | "assistant"; text: string };
 

@@ -91,7 +91,7 @@ kit-genie-main/
 
 ### Pré-requisitos
 - Node.js 20+
-- Conta Firebase com projeto `decora-gestao`
+- Conta Firebase com projeto `pink-love-gestao`
 - (Opcional) Conta Z-API para WhatsApp
 
 ### Passos
