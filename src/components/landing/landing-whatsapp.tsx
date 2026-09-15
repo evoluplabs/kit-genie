@@ -36,9 +36,9 @@ export function LandingWhatsapp() {
           <div className="absolute -inset-6 bg-primary/10 blur-3xl rounded-full -z-10" />
           <div className="bg-card rounded-[2.5rem] border border-border shadow-glow overflow-hidden">
             <div className="bg-emerald-700 text-white px-5 py-4 flex items-center gap-3">
-              <div className="size-10 rounded-full bg-emerald-500 grid place-items-center font-bold">PL</div>
+              <div className="size-10 rounded-full bg-emerald-500 grid place-items-center font-bold">DG</div>
               <div>
-                <div className="font-semibold text-sm">Pink Love Decorações</div>
+                <div className="font-semibold text-sm">Decora Gestão</div>
                 <div className="text-[10px] opacity-80">online · respondendo automaticamente</div>
               </div>
             </div>

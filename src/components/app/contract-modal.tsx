@@ -281,7 +281,7 @@ export function ContractModal({ sale, onClose }: { sale: Sale; onClose: () => vo
       text("Contratante", sigX2 + sigW / 2, y + 23, { size: 7, color: "#9ca3af", align: "center" });
 
       y += 30;
-      text(`Documento gerado pelo Pink Love Gestão · ${now} · Ref: ${contractNum}`, W / 2, y, {
+      text(`Documento gerado pelo Decora Gestão · ${now} · Ref: ${contractNum}`, W / 2, y, {
         size: 7, color: "#d1d5db", align: "center",
       });
 

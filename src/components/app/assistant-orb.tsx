@@ -1,11 +1,13 @@
 import * as React from "react";
+import { Link } from "@tanstack/react-router";
 import { Mic, MicOff, Send, X, Sparkles, Loader2 } from "lucide-react";
 import { cls } from "@/lib/format";
 import { auth } from "@/lib/firebase";
 
 const ASSISTANT_URL = "https://us-central1-pink-love-gestao.cloudfunctions.net/assistant";
 
-type Message = { role: "user" | "assistant"; text: string };
+type Message = { role: "user" | "assistant"; text: string; upsell?: boolean };
+type AssistantResult = { text: string; upsell?: boolean };
 
 // Web Speech API types
 declare global {
@@ -48,9 +50,9 @@ function getSpeechRecognition(): (new () => SpeechRecognition) | null {
   return window.SpeechRecognition ?? window.webkitSpeechRecognition ?? null;
 }
 
-async function sendToAssistant(text: string): Promise<string> {
+async function sendToAssistant(text: string): Promise<AssistantResult> {
   const user = auth.currentUser;
-  if (!user) return "Você precisa estar logada para usar o assistente.";
+  if (!user) return { text: "Você precisa estar logada para usar o assistente." };
 
   const token = await user.getIdToken();
 
@@ -63,9 +65,17 @@ async function sendToAssistant(text: string): Promise<string> {
     body: JSON.stringify({ text }),
   });
 
-  if (!res.ok) return "Erro ao processar o comando. Tente novamente.";
+  if (res.status === 402) {
+    const data = await res.json().catch(() => null) as { message?: string } | null;
+    return {
+      text: data?.message ?? "Você já usou suas interações gratuitas. Assine por R$9,90/mês para continuar.",
+      upsell: true,
+    };
+  }
+
+  if (!res.ok) return { text: "Erro ao processar o comando. Tente novamente." };
   const data = await res.json() as { message?: string };
-  return data.message ?? "Pronto!";
+  return { text: data.message ?? "Pronto!" };
 }
 
 function speak(text: string) {
@@ -114,9 +124,9 @@ export function AssistantOrb() {
     setMessages(m => [...m, { role: "user", text: trimmed }]);
     setLoading(true);
     try {
-      const reply = await sendToAssistant(trimmed);
-      setMessages(m => [...m, { role: "assistant", text: reply }]);
-      speak(reply);
+      const { text: reply, upsell } = await sendToAssistant(trimmed);
+      setMessages(m => [...m, { role: "assistant", text: reply, upsell }]);
+      if (!upsell) speak(reply);
     } finally {
       setLoading(false);
     }
@@ -158,7 +168,7 @@ export function AssistantOrb() {
               <Sparkles className="size-4" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-bold">Assistente Pink Love</div>
+              <div className="text-sm font-bold">Assistente Decora</div>
               <div className="text-[10px] opacity-70">Voz ou texto — em português</div>
             </div>
             <button
@@ -173,7 +183,7 @@ export function AssistantOrb() {
           {/* Mensagens */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-72 bg-surface">
             {messages.map((m, i) => (
-              <div key={i} className={cls("flex", m.role === "user" ? "justify-end" : "justify-start")}>
+              <div key={i} className={cls("flex flex-col", m.role === "user" ? "items-end" : "items-start")}>
                 <div className={cls(
                   "max-w-[85%] text-xs px-3 py-2 rounded-2xl leading-relaxed whitespace-pre-line",
                   m.role === "user"
@@ -182,6 +192,15 @@ export function AssistantOrb() {
                 )}>
                   {m.text}
                 </div>
+                {m.upsell && (
+                  <Link
+                    to="/app/settings"
+                    onClick={() => setOpen(false)}
+                    className="mt-1.5 text-[11px] font-semibold text-primary hover:underline"
+                  >
+                    Assinar por R$9,90/mês →
+                  </Link>
+                )}
               </div>
             ))}
             {loading && (

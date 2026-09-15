@@ -1,18 +1,17 @@
 // Repositórios — única porta de entrada para dados.
-// Leitura: síncrona do cache em memória (atualizado por onSnapshot).
+// Leitura: síncrona do cache em memória (atualizado no login e no refresh manual).
 // Escrita: atualiza cache imediatamente + persiste no Firestore em background.
 
 import type {
-  CatalogConfig, Component, CostEntry, DbSchema, Kit, KitTierName, Profile, Sale, Settings,
+  Component, CostEntry, DbSchema, Kit, KitTierName, Profile, Sale, Settings,
 } from "./types";
 import {
-  loadDb, notify, subscribe,
+  loadDb, notify, subscribe, refreshDb,
   fsSetComponent, fsDeleteComponent,
   fsSetKit, fsDeleteKit,
   fsSetSale, fsUpdateSaleStatus, fsDeleteSale,
   fsSetCost, fsDeleteCost,
   fsSetProfile, fsSetSettings,
-  fsSetCatalogConfig,
 } from "./firestore";
 
 export { subscribe } from "./firestore";
@@ -126,12 +125,6 @@ export const kitsRepo = {
     fsDeleteKit(id).catch((e) => console.error("[db] kit delete sync", e));
   },
 
-  /**
-   * Verifica disponibilidade de um kit numa data.
-   * @param id        ID do kit
-   * @param eventDate Timestamp do evento (opcional — verifica conflito de locação)
-   * @param tierName  Tier selecionado (opcional — usa BOM do tier em vez do BOM base)
-   */
   availability(
     id: string,
     eventDate?: number,
@@ -144,14 +137,12 @@ export const kitsRepo = {
     const kit = db.kits.find(k => k.id === id);
     if (!kit) return { available: false, missing: [] };
 
-    // Usa BOM do tier selecionado, ou BOM base do kit
     const tierItems = tierName
       ? (kit.tiers?.find(t => t.name === tierName)?.items ?? kit.items ?? [])
       : (kit.items ?? []);
 
     const missing: Array<{ componentId: string; name: string; need: number; have: number }> = [];
 
-    // Calcula componentes reutilizáveis comprometidos na data
     const committedOnDate = new Map<string, number>();
     if (eventDate) {
       const dayStart = startOfDay(eventDate);
@@ -166,7 +157,6 @@ export const kitsRepo = {
         .forEach(s => {
           const saleKit = db.kits.find(k => k.id === s.kitId);
           if (saleKit) {
-            // BOM efetivo da venda (considera tier da venda)
             const saleTierItems = s.kitTier
               ? (saleKit.tiers?.find(t => t.name === s.kitTier)?.items ?? saleKit.items ?? [])
               : (saleKit.items ?? []);
@@ -223,7 +213,6 @@ export const salesRepo = {
     const kit = db.kits.find(k => k.id === input.kitId);
     if (!kit) throw new Error("Kit não encontrado");
 
-    // BOM efetivo (tier ou base)
     const effectiveItems = input.kitTier
       ? (kit.tiers?.find(t => t.name === input.kitTier)?.items ?? kit.items ?? [])
       : (kit.items ?? []);
@@ -239,7 +228,6 @@ export const salesRepo = {
     mutate((db) => {
       db.sales.push(sale);
 
-      // Debita BOM do kit (itens não reutilizáveis)
       for (const it of effectiveItems) {
         const c = db.components.find(x => x.id === it.componentId);
         if (c && !c.reusable) {
@@ -249,7 +237,6 @@ export const salesRepo = {
         }
       }
 
-      // Debita extras (itens não reutilizáveis)
       if (input.extraItems?.length) {
         for (const extra of input.extraItems) {
           const c = db.components.find(x => x.id === extra.componentId);
@@ -281,7 +268,6 @@ export const salesRepo = {
       const kit = db.kits.find(k => k.id === s.kitId);
       if (!kit) return;
 
-      // BOM efetivo
       const effectiveItems = s.kitTier
         ? (kit.tiers?.find(t => t.name === s.kitTier)?.items ?? kit.items ?? [])
         : (kit.items ?? []);
@@ -304,11 +290,9 @@ export const salesRepo = {
       };
 
       if (status === "cancelado" && prevStatus !== "cancelado") {
-        // Restaura estoque ao cancelar
         for (const it of effectiveItems) restoreStock(it.componentId, it.quantity);
         for (const extra of s.extraItems ?? []) restoreStock(extra.componentId, extra.quantity);
       } else if (prevStatus === "cancelado" && status !== "cancelado") {
-        // Reativa venda cancelada: deduz novamente
         for (const it of effectiveItems) debitStock(it.componentId, it.quantity);
         for (const extra of s.extraItems ?? []) debitStock(extra.componentId, extra.quantity);
       }
@@ -339,7 +323,6 @@ export const salesRepo = {
               updatedComponents.push(c);
             }
           }
-          // Restaura extras
           for (const extra of sale.extraItems ?? []) {
             const c = db.components.find(x => x.id === extra.componentId);
             if (c && !c.reusable) {
@@ -380,16 +363,6 @@ export const costsRepo = {
   remove(id: string): void {
     mutate((db) => { db.costs = db.costs.filter(c => c.id !== id); });
     fsDeleteCost(id).catch((e) => console.error("[db] cost delete sync", e));
-  },
-};
-
-// ---------- Catalog white-label ----------
-export const catalogRepo = {
-  get(): CatalogConfig | null { return read().catalogConfig; },
-  save(cfg: CatalogConfig): void {
-    const prevSlug = read().catalogConfig?.slug;
-    mutate((db) => { db.catalogConfig = cfg; });
-    fsSetCatalogConfig(cfg, prevSlug).catch((e) => console.error("[db] catalog sync", e));
   },
 };
 
@@ -452,7 +425,6 @@ export const analytics = {
       .sort((a, b) => a.eventDate - b.eventDate)
       .slice(0, limit);
   },
-  /** Vendas com retorno pendente (returnDate no futuro próximo, status entregue) */
   pendingReturns(days = 7): Sale[] {
     const now = Date.now();
     const limit = now + days * 86400000;
@@ -465,7 +437,6 @@ export const analytics = {
       )
       .sort((a, b) => (a.returnDate ?? 0) - (b.returnDate ?? 0));
   },
-  /** Vendas com retorno em atraso (returnDate no passado, não concluído/cancelado) */
   overdueReturns(): Sale[] {
     const now = Date.now();
     return salesRepo.list()
@@ -495,4 +466,5 @@ function startOfDay(ts: number): number {
 }
 
 export const dbSubscribe = subscribe;
+export const dbRefresh = refreshDb;
 export const dbReset = () => read();

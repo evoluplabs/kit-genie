@@ -30,7 +30,7 @@ export function LandingPain() {
           <div className="flex items-center gap-3 mb-6">
             <div className="size-10 rounded-full bg-destructive/10 grid place-items-center text-xl">😩</div>
             <div>
-              <div className="font-bold text-destructive">Sem o Pink Love</div>
+              <div className="font-bold text-destructive">Sem o Decora Gestão</div>
               <div className="text-xs text-muted-foreground">O que acontece toda semana</div>
             </div>
           </div>
@@ -49,7 +49,7 @@ export function LandingPain() {
           <div className="flex items-center gap-3 mb-6">
             <div className="size-10 rounded-full bg-emerald-100 grid place-items-center text-xl">✨</div>
             <div>
-              <div className="font-bold text-emerald-700">Com o Pink Love</div>
+              <div className="font-bold text-emerald-700">Com o Decora Gestão</div>
               <div className="text-xs text-muted-foreground">Como fica a partir do primeiro dia</div>
             </div>
           </div>

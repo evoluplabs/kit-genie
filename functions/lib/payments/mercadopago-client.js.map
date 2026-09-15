@@ -1,0 +1,1 @@
+{"version":3,"file":"mercadopago-client.js","sourceRoot":"","sources":["../../src/payments/mercadopago-client.ts"],"names":[],"mappings":";;AAIA,oDAEC;AAND,6CAAgD;AAEhD,4EAA4E;AAC5E,yDAAyD;AACzD,SAAgB,oBAAoB;;IAClC,OAAO,IAAI,+BAAiB,CAAC,EAAE,WAAW,EAAE,MAAA,OAAO,CAAC,GAAG,CAAC,wBAAwB,mCAAI,EAAE,EAAE,CAAC,CAAC;AAC5F,CAAC"}

@@ -87,11 +87,13 @@ export function seedDb(): DbSchema {
       notifyWeeklyReport: true,
       currency: "BRL",
       lowStockMultiplier: 1,
+      assistantEnabled: false,
+      assistantFreeUsesRemaining: 25,
+      assistantSubscriptionActive: false,
     },
     components,
     kits,
     sales,
     costs,
-    catalogConfig: null,
   };
 }

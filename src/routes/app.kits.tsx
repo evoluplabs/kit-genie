@@ -18,12 +18,10 @@ import { useAuth } from "@/services/auth/auth-context";
 
 export const Route = createFileRoute("/app/kits")({ component: KitsPage });
 
-/* ── Constantes ─────────────────────────────────────────────── */
-
 const TYPE_LABEL: Record<Kit["type"], string> = {
   decoracao:   "Decoração montada",
   pegue_monte: "Pegue e monte",
-  locacao:     "Locação",
+  locacao:     "Festa na mesa",
 };
 
 const TYPE_COLOR: Record<Kit["type"], string> = {
@@ -45,6 +43,21 @@ const DEFAULT_TIERS: KitTier[] = [
   { name: "prata",  price: 0, items: [], description: "Mais itens inclusos" },
   { name: "ouro",   price: 0, items: [], description: "Kit completo premium" },
 ];
+
+/* ── Money Input ──────────────────────────────────────── */
+function MoneyInput({ value, onChange, step = 10 }: { value: number; onChange: (v: number) => void; step?: number }) {
+  return (
+    <div className="flex items-center border border-border rounded-xl bg-card overflow-hidden focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary">
+      <span className="px-3 py-2 text-sm font-semibold text-muted-foreground bg-surface border-r border-border shrink-0 select-none">R$</span>
+      <input
+        type="number" min={0} step={step}
+        value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        className="flex-1 py-2 px-3 text-sm bg-transparent outline-none min-w-0"
+      />
+    </div>
+  );
+}
 
 /* ══════════════════════════════════════════════════════════════
    PAGE
@@ -73,6 +86,12 @@ function KitsPage() {
     return list;
   }, [kits, filter, search]);
 
+  const handleClose = () => {
+    setCreating(false);
+    setEditing(null);
+    setFilter("todos");
+  };
+
   return (
     <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-6">
       <PageHeader
@@ -88,7 +107,6 @@ function KitsPage() {
         }
       />
 
-      {/* Filtros */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -105,7 +123,7 @@ function KitsPage() {
           )}
         </div>
         <div className="flex gap-1 bg-card border border-border rounded-xl p-1">
-          {(["todos", "decoracao", "pegue_monte", "locacao"] as const).map(t => (
+          {(["todos", "pegue_monte", "locacao"] as const).map(t => (
             <button
               key={t}
               onClick={() => setFilter(t)}
@@ -134,7 +152,6 @@ function KitsPage() {
         </p>
       )}
 
-      {/* Lista */}
       {filtered.length === 0 ? (
         <EmptyKits hasKits={kits.length > 0} onNew={() => setCreating(true)} />
       ) : layout === "grid" ? (
@@ -148,27 +165,19 @@ function KitsPage() {
       )}
 
       {(creating || editing) && (
-        <KitDialog
-          kit={editing}
-          components={components}
-          onClose={() => { setCreating(false); setEditing(null); }}
-        />
+        <KitDialog kit={editing} components={components} onClose={handleClose} />
       )}
     </div>
   );
 }
 
 /* ══════════════════════════════════════════════════════════════
-   KIT CARD (grid)
+   KIT CARD
 ══════════════════════════════════════════════════════════════ */
 
 function KitCard({ kit: k, onClick }: { kit: Kit; onClick: () => void }) {
   const av = kitsRepo.availability(k.id);
   const hasTiers = (k.tiers?.length ?? 0) > 0;
-  const priceRange = hasTiers
-    ? `${brl(k.tiers?.[0]?.price ?? 0)} ~ ${brl(k.tiers?.[k.tiers.length - 1]?.price ?? 0)}`
-    : brl(k.price);
-
   return (
     <button
       onClick={onClick}
@@ -194,12 +203,10 @@ function KitCard({ kit: k, onClick }: { kit: Kit; onClick: () => void }) {
           <div className="bg-white rounded-full p-2 shadow-lg"><Edit2 className="size-4 text-gray-700" /></div>
         </div>
       </div>
-
       <div className="p-4">
         <h3 className="font-bold text-base leading-tight mb-1">{k.name}</h3>
         {k.theme && <p className="text-xs text-muted-foreground mb-2">{k.theme}</p>}
         {k.description && <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{k.description}</p>}
-        {/* Tier badges */}
         {hasTiers && (
           <div className="flex gap-1 mb-3">
             {TIER_NAMES.map(t => {
@@ -233,10 +240,6 @@ function KitCard({ kit: k, onClick }: { kit: Kit; onClick: () => void }) {
     </button>
   );
 }
-
-/* ══════════════════════════════════════════════════════════════
-   KIT ROW (lista)
-══════════════════════════════════════════════════════════════ */
 
 function KitRow({ kit: k, onClick, last }: { kit: Kit; onClick: () => void; last: boolean }) {
   const av = kitsRepo.availability(k.id);
@@ -277,10 +280,6 @@ function KitRow({ kit: k, onClick, last }: { kit: Kit; onClick: () => void; last
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   EMPTY STATE
-══════════════════════════════════════════════════════════════ */
-
 function EmptyKits({ hasKits, onNew }: { hasKits: boolean; onNew: () => void }) {
   return (
     <div className="rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center py-16 text-center px-6">
@@ -311,10 +310,9 @@ function KitDialog({
 }) {
   const { user } = useAuth();
 
-  /* ── Campos base ── */
   const [name,        setName]        = React.useState(kit?.name ?? "");
   const [theme,       setTheme]       = React.useState(kit?.theme ?? "");
-  const [type,        setType]        = React.useState<Kit["type"]>(kit?.type ?? "decoracao");
+  const [type,        setType]        = React.useState<Kit["type"]>(kit?.type ?? "pegue_monte");
   const [description, setDescription] = React.useState(kit?.description ?? "");
   const [price,       setPrice]       = React.useState(kit?.price ?? 0);
   const [items,       setItems]       = React.useState<KitItem[]>(kit?.items ?? []);
@@ -324,14 +322,14 @@ function KitDialog({
   const [saving,      setSaving]      = React.useState(false);
   const fileRef = React.useRef<HTMLInputElement>(null);
 
-  /* ── Tiers ── */
-  const [tiersEnabled,  setTiersEnabled]  = React.useState(!!(kit?.tiers?.length));
-  const [tiers,         setTiers]         = React.useState<KitTier[]>(
-    kit?.tiers?.length ? kit.tiers : DEFAULT_TIERS.map(t => ({ ...t, items: t.name === "bronze" ? (kit?.items ?? []) : [], price: t.name === "bronze" ? (kit?.price ?? 0) : 0 })),
+  const [tiersEnabled, setTiersEnabled] = React.useState(!!(kit?.tiers?.length));
+  const [tiers,        setTiers]        = React.useState<KitTier[]>(
+    kit?.tiers?.length
+      ? kit.tiers
+      : DEFAULT_TIERS.map(t => ({ ...t, items: t.name === "bronze" ? (kit?.items ?? []) : [], price: t.name === "bronze" ? (kit?.price ?? 0) : 0 })),
   );
   const [activeTier, setActiveTier] = React.useState<KitTierName>("bronze");
 
-  /* ── BOM do tier ativo ── */
   const tierItems = React.useMemo(
     () => tiers.find(t => t.name === activeTier)?.items ?? [],
     [tiers, activeTier],
@@ -339,31 +337,24 @@ function KitDialog({
   const setTierItems = (fn: (prev: KitItem[]) => KitItem[]) => {
     setTiers(prev => prev.map(t => t.name === activeTier ? { ...t, items: fn(t.items) } : t));
   };
-  const setTierPrice = (tierName: KitTierName, val: number) => {
-    setTiers(prev => prev.map(t => t.name === tierName ? { ...t, price: val } : t));
-  };
-  const setTierDescription = (tierName: KitTierName, val: string) => {
-    setTiers(prev => prev.map(t => t.name === tierName ? { ...t, description: val } : t));
-  };
+  const setTierPrice       = (n: KitTierName, v: number) => setTiers(prev => prev.map(t => t.name === n ? { ...t, price: v } : t));
+  const setTierDescription = (n: KitTierName, v: string) => setTiers(prev => prev.map(t => t.name === n ? { ...t, description: v } : t));
 
-  /* ── BOM helpers ── */
-  const addItem = (cid: string, forItems: KitItem[], setFn: (fn: (p: KitItem[]) => KitItem[]) => void) => {
+  const addItem    = (cid: string, forItems: KitItem[], setFn: (fn: (p: KitItem[]) => KitItem[]) => void) => {
     if (forItems.find(i => i.componentId === cid)) return;
     setFn(prev => [...prev, { componentId: cid, quantity: 1 }]);
   };
-  const updateQty = (cid: string, qty: number, setFn: (fn: (p: KitItem[]) => KitItem[]) => void) =>
+  const updateQty  = (cid: string, qty: number, setFn: (fn: (p: KitItem[]) => KitItem[]) => void) =>
     setFn(prev => prev.map(i => i.componentId === cid ? { ...i, quantity: Math.max(1, qty) } : i));
   const removeItem = (cid: string, setFn: (fn: (p: KitItem[]) => KitItem[]) => void) =>
     setFn(prev => prev.filter(i => i.componentId !== cid));
 
-  /* ── BOM cost ── */
   const bomCost = (bomItems: KitItem[]) =>
     bomItems.reduce((acc, it) => {
       const c = components.find(x => x.id === it.componentId);
       return acc + (c?.unitCost ?? 0) * it.quantity;
     }, 0);
 
-  /* ── Image upload ── */
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -372,26 +363,28 @@ function KitDialog({
     setUploading(true);
     try {
       const storage = getStorage();
-      const kitId = kit?.id ?? `new-${Date.now()}`;
-      const ext = file.name.split(".").pop() ?? "jpg";
-      const storageRef = ref(storage, `kits/${user.id}/${kitId}.${ext}`);
+      const kitId   = kit?.id ?? `new-${Date.now()}`;
+      const ext     = file.name.split(".").pop() ?? "jpg";
+      const sRef    = ref(storage, `kits/${user.id}/${kitId}.${ext}`);
       if (imageUrl) {
         try { await deleteObject(ref(storage, imageUrl)); } catch (_) { /* ok */ }
       }
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
+      await uploadBytes(sRef, file);
+      const url = await getDownloadURL(sRef);
       setImageUrl(url);
       toast.success("Foto enviada!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro ao enviar a foto. Tente novamente.");
+    } catch (err: any) {
+      if (err?.code === "storage/unauthorized") {
+        toast.error("Sem permissão para enviar foto. Implante as regras do Firebase Storage (storage.rules).");
+      } else {
+        toast.error("Erro ao enviar a foto. Tente novamente.");
+      }
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
     }
   };
 
-  /* ── Save ── */
   const save = async () => {
     if (!name.trim()) { toast.error("Dê um nome ao kit"); return; }
     setSaving(true);
@@ -399,23 +392,15 @@ function KitDialog({
       let payload: Omit<Kit, "id" | "createdAt" | "updatedAt">;
       if (tiersEnabled) {
         const bronzeTier = tiers.find(t => t.name === "bronze") ?? { name: "bronze", price: 0, items: [], description: "" };
-        payload = {
-          name: name.trim(), theme, type, description,
-          price: bronzeTier.price,    // preço base = Bronze
-          items: bronzeTier.items,    // BOM base = Bronze
-          tiers,
-          active: true, imageColor, imageUrl,
-        };
+        payload = { name: name.trim(), theme, type, description, price: bronzeTier.price, items: bronzeTier.items, tiers, active: true, imageColor, imageUrl };
       } else {
-        payload = {
-          name: name.trim(), theme, type, description,
-          price, items, tiers: undefined,
-          active: true, imageColor, imageUrl,
-        };
+        payload = { name: name.trim(), theme, type, description, price, items, tiers: undefined, active: true, imageColor, imageUrl };
       }
       if (kit) { kitsRepo.update(kit.id, payload); toast.success("Kit atualizado!"); }
-      else      { kitsRepo.create(payload);         toast.success("Kit criado!"); }
+      else      { kitsRepo.create(payload);          toast.success("Kit criado!");      }
       onClose();
+    } catch (err) {
+      toast.error("Erro ao salvar kit. Tente novamente.");
     } finally {
       setSaving(false);
     }
@@ -431,12 +416,8 @@ function KitDialog({
 
   const PALETTE = ["#FDA4AF","#C4B5FD","#93C5FD","#6EE7B7","#FCD34D","#F9A8D4","#A5F3FC","#FCA5A5"];
 
-  /* ── BOM section (reusado para single e por tier) ── */
   const BomSection = ({
-    bomItems,
-    setFn,
-    currentCost,
-    currentPrice,
+    bomItems, setFn, currentCost, currentPrice,
   }: {
     bomItems: KitItem[];
     setFn: (fn: (p: KitItem[]) => KitItem[]) => void;
@@ -457,13 +438,12 @@ function KitDialog({
           </span>
         )}
       </div>
-
       {bomItems.length > 0 && (
         <div className="space-y-2 mb-3">
           {bomItems.map(it => {
             const c = components.find(x => x.id === it.componentId);
             if (!c) return null;
-            const cost = c.unitCost * it.quantity;
+            const cost    = c.unitCost * it.quantity;
             const stockOk = c.stock >= it.quantity;
             return (
               <div key={it.componentId} className="flex items-center gap-3 bg-surface border border-border rounded-xl p-3">
@@ -492,7 +472,6 @@ function KitDialog({
           })}
         </div>
       )}
-
       <select
         onChange={e => { if (e.target.value) { addItem(e.target.value, bomItems, setFn); e.target.value = ""; } }}
         className="inp text-muted-foreground"
@@ -505,7 +484,6 @@ function KitDialog({
             <option key={c.id} value={c.id}>{c.name} — {c.stock} {c.unit} em estoque · {brl(c.unitCost)}/{c.unit}</option>
           ))}
       </select>
-
       {bomItems.length === 0 && (
         <p className="text-xs text-muted-foreground mt-2 text-center py-4 border border-dashed border-border rounded-xl">
           Nenhum material adicionado. O sistema não vai debitar estoque.
@@ -521,7 +499,6 @@ function KitDialog({
         className="bg-card rounded-3xl w-full max-w-2xl shadow-2xl my-8"
         style={{ maxHeight: "90vh", overflowY: "auto" }}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-8 pt-7 pb-5 border-b border-border">
           <div>
             <h2 className="font-display text-xl font-bold">{kit ? "Editar kit" : "Novo kit"}</h2>
@@ -567,7 +544,6 @@ function KitDialog({
                   </button>
                 )}
               </div>
-
               <div className="flex-1 space-y-3">
                 <div>
                   <button
@@ -604,18 +580,17 @@ function KitDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <FieldLabel icon={<Package className="size-3.5" />} label="Nome do kit" />
-              <input value={name} onChange={e => setName(e.target.value)} className="inp" placeholder="Ex: Kit Mickey Premium" autoFocus />
+              <input value={name} onChange={e => setName(e.target.value)} className="inp" placeholder="Ex: Kit Jardim Encantado" autoFocus />
             </div>
             <div>
               <FieldLabel icon={<Tag className="size-3.5" />} label="Tema" />
-              <input value={theme} onChange={e => setTheme(e.target.value)} className="inp" placeholder="Ex: Mickey Mouse" />
+              <input value={theme} onChange={e => setTheme(e.target.value)} className="inp" placeholder="Ex: Jardim, Unicorn, Safari" />
             </div>
             <div>
               <FieldLabel label="Tipo de serviço" />
               <select value={type} onChange={e => setType(e.target.value as Kit["type"])} className="inp">
-                <option value="decoracao">Decoração montada</option>
                 <option value="pegue_monte">Pegue e monte</option>
-                <option value="locacao">Locação</option>
+                <option value="locacao">Festa na mesa</option>
               </select>
             </div>
           </div>
@@ -625,7 +600,7 @@ function KitDialog({
             <textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="inp resize-none" placeholder="Descreva o que está incluído no kit…" />
           </div>
 
-          {/* ══ TOGGLE TIERS ══════════════════════════════════════ */}
+          {/* Tiers toggle */}
           <div className="rounded-2xl border border-border bg-surface/50 p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -635,102 +610,60 @@ function KitDialog({
                   <p className="text-[11px] text-muted-foreground">Variações do kit com preços e materiais diferentes</p>
                 </div>
               </div>
-              {/* Toggle */}
               <button
                 onClick={() => setTiersEnabled(v => !v)}
-                className={cls(
-                  "relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none",
-                  tiersEnabled ? "bg-primary" : "bg-border",
-                )}
-                role="switch"
-                aria-checked={tiersEnabled}
+                className={cls("relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none", tiersEnabled ? "bg-primary" : "bg-border")}
+                role="switch" aria-checked={tiersEnabled}
               >
-                <span className={cls(
-                  "absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform duration-200",
-                  tiersEnabled ? "translate-x-5" : "translate-x-0",
-                )} />
+                <span className={cls("absolute top-0.5 left-0.5 size-5 rounded-full bg-white shadow transition-transform duration-200", tiersEnabled ? "translate-x-5" : "translate-x-0")} />
               </button>
             </div>
 
-            {/* ── Modo TIERS ─────────────────────────────────────── */}
             {tiersEnabled && (
               <div className="mt-4 space-y-4">
-                {/* Tab selector */}
                 <div className="flex gap-1 bg-card border border-border rounded-xl p-1">
                   {TIER_NAMES.map(t => {
-                    const m = TIER_META[t];
+                    const m        = TIER_META[t];
                     const tierData = tiers.find(x => x.name === t) ?? { name: t, price: 0, items: [], description: "" };
                     return (
                       <button
                         key={t}
                         onClick={() => setActiveTier(t)}
-                        className={cls(
-                          "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-colors",
-                          activeTier === t
-                            ? cls("shadow-sm ring-1", m.bg, m.color, m.ring)
-                            : "text-muted-foreground hover:bg-surface",
-                        )}
+                        className={cls("flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-colors",
+                          activeTier === t ? cls("shadow-sm ring-1", m.bg, m.color, m.ring) : "text-muted-foreground hover:bg-surface")}
                       >
                         <span>{m.emoji}</span>
                         <span>{m.label}</span>
-                        {tierData.price > 0 && (
-                          <span className="hidden sm:inline opacity-60 text-[10px]">
-                            {brl(tierData.price)}
-                          </span>
-                        )}
+                        {tierData.price > 0 && <span className="hidden sm:inline opacity-60 text-[10px]">{brl(tierData.price)}</span>}
                       </button>
                     );
                   })}
                 </div>
-
-                {/* Conteúdo do tier ativo */}
                 {TIER_NAMES.map(tierName => {
                   const tierData = tiers.find(t => t.name === tierName) ?? { name: tierName, price: 0, items: [], description: "" };
-                  const meta = TIER_META[tierName];
-                  const cost = bomCost(tierData.items);
+                  const meta     = TIER_META[tierName];
+                  const cost     = bomCost(tierData.items);
                   if (tierName !== activeTier) return null;
                   return (
                     <div key={tierName} className="space-y-4">
-                      {/* Descrição + Preço do tier */}
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <FieldLabel label={`Descrição do tier ${meta.label}`} />
-                          <input
-                            value={tierData.description ?? ""}
-                            onChange={e => setTierDescription(tierName, e.target.value)}
-                            className="inp"
-                            placeholder={`Ex: ${meta.label === "Bronze" ? "Itens essenciais" : meta.label === "Prata" ? "Mais balões e painel" : "Kit completo premium"}`}
-                          />
+                          <FieldLabel label={`Descrição ${meta.label}`} />
+                          <input value={tierData.description ?? ""} onChange={e => setTierDescription(tierName, e.target.value)} className="inp"
+                            placeholder={`Ex: ${tierName === "bronze" ? "Itens essenciais" : tierName === "prata" ? "Mais balões e painel" : "Kit completo premium"}`} />
                         </div>
                         <div>
                           <FieldLabel icon={<DollarSign className="size-3.5" />} label={`Preço ${meta.emoji} ${meta.label}`} />
-                          <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">R$</span>
-                            <input
-                              type="number" min={0} step={10}
-                              value={tierData.price}
-                              onChange={e => setTierPrice(tierName, Number(e.target.value))}
-                              className="inp pl-9"
-                            />
-                          </div>
+                          <MoneyInput value={tierData.price} onChange={v => setTierPrice(tierName, v)} />
                         </div>
                       </div>
-
-                      {/* BOM do tier */}
-                      <BomSection
-                        bomItems={tierData.items}
-                        setFn={setTierItems}
-                        currentCost={cost}
-                        currentPrice={tierData.price}
-                      />
+                      <BomSection bomItems={tierData.items} setFn={setTierItems} currentCost={cost} currentPrice={tierData.price} />
                     </div>
                   );
                 })}
-
-                {/* Resumo de preços */}
                 <div className="flex items-center gap-2 pt-2 border-t border-border">
                   {TIER_NAMES.map(t => {
-                    const m = TIER_META[t];
+                    const m        = TIER_META[t];
                     const tierData = tiers.find(x => x.name === t) ?? { name: t, price: 0, items: [], description: "" };
                     return (
                       <div key={t} className={cls("flex-1 text-center py-2 rounded-xl", m.bg)}>
@@ -743,28 +676,18 @@ function KitDialog({
               </div>
             )}
 
-            {/* ── Modo ÚNICO (sem tiers) ──────────────────────────── */}
             {!tiersEnabled && (
               <div className="mt-4 space-y-4">
                 <div>
                   <FieldLabel icon={<DollarSign className="size-3.5" />} label="Preço de venda (R$)" />
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">R$</span>
-                    <input type="number" min={0} step={10} value={price} onChange={e => setPrice(Number(e.target.value))} className="inp pl-9" />
-                  </div>
+                  <MoneyInput value={price} onChange={setPrice} />
                 </div>
-                <BomSection
-                  bomItems={items}
-                  setFn={fn => setItems(fn)}
-                  currentCost={bomCost(items)}
-                  currentPrice={price}
-                />
+                <BomSection bomItems={items} setFn={fn => setItems(fn)} currentCost={bomCost(items)} currentPrice={price} />
               </div>
             )}
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center justify-between px-8 pb-7 pt-4 border-t border-border">
           {kit ? (
             <button onClick={del} className="flex items-center gap-1.5 text-sm text-destructive font-semibold hover:bg-destructive/10 px-3 py-2 rounded-xl transition-colors">
@@ -779,16 +702,12 @@ function KitDialog({
           </div>
         </div>
 
-        <style>{`
-          .inp { width:100%; padding:0.5rem 0.75rem; border-radius:0.625rem; border:1px solid var(--border); background:var(--card); font-size:0.875rem; transition:border-color 0.15s,box-shadow 0.15s; }
-          .inp:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 15%,transparent); }
-        `}</style>
+        <style>{".inp{width:100%;padding:0.5rem 0.75rem;border-radius:0.625rem;border:1px solid var(--border);background:var(--card);font-size:0.875rem;transition:border-color 0.15s,box-shadow 0.15s}.inp:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 15%,transparent)}"}</style>
       </div>
     </div>
   );
 }
 
-/* ── Helpers ─────────────────────────────────────────────────── */
 function FieldLabel({ label, icon }: { label: string; icon?: React.ReactNode }) {
   return (
     <label className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 block">

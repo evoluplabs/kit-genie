@@ -20,6 +20,12 @@ function sessionKey(userId: string, phone: string) {
   return `${userId}:${phone}`;
 }
 
+// Mesmo algoritmo de geração de ID usado no app (src/services/db/index.ts),
+// para que documentos criados pelo bot fiquem no mesmo formato dos criados pelo app.
+function generateId(): string {
+  return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+}
+
 export async function handleMessage(
   userId: string,
   config: ZApiConfig,
@@ -159,11 +165,14 @@ async function handleConfirmar(
   customerPhone: string
 ): Promise<void> {
   if (input === "sim" || input === "s" || input === "yes") {
-    // Cria rascunho de venda no Firestore
+    // Cria rascunho de venda no Firestore — id gerado explicitamente e gravado dentro do
+    // próprio documento, no mesmo formato usado pelo app (fsSetSale/salesRepo).
     const [dd, mm, yyyy] = (session.date ?? "").split("/");
     const eventDate = new Date(parseInt(yyyy), parseInt(mm) - 1, parseInt(dd)).getTime();
+    const saleId = generateId();
 
-    await db.collection(`users/${userId}/sales`).add({
+    await db.doc(`users/${userId}/sales/${saleId}`).set({
+      id: saleId,
       customerName: `WhatsApp ${customerPhone}`,
       customerPhone,
       kitId: session.kitId,

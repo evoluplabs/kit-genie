@@ -3,18 +3,20 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   User, Bell, MessageCircle, Info, Target, ChevronRight,
   CheckCircle2, AlertTriangle, Eye, EyeOff, ExternalLink,
-  TrendingUp, DollarSign, Trash2,
+  TrendingUp, DollarSign, Trash2, Sparkles, Clock,
 } from "lucide-react";
 import { useDb } from "@/hooks/use-db";
-import { profileRepo, settingsRepo, dbReset } from "@/services/db";
+import { profileRepo, settingsRepo, dbReset, dbRefresh } from "@/services/db";
 import { brl, cls } from "@/lib/format";
 import { PageHeader } from "@/components/app/app-shell";
 import { toast } from "sonner";
+import { MercadoPagoSubscribeModal } from "@/components/checkout/mercadopago-subscribe-modal";
+import { MVP_STATUS, type FeatureStatus } from "@/lib/mvp-status";
 
 export const Route = createFileRoute("/app/settings")({ component: SettingsPage });
 
 /* ─── Tipos de seção ────────────────────────────────────────── */
-type Section = "perfil" | "metas" | "notificacoes" | "whatsapp" | "sobre";
+type Section = "perfil" | "metas" | "notificacoes" | "whatsapp" | "assistente" | "sobre";
 
 function SettingsPage() {
   const profile  = useDb(() => profileRepo.get());
@@ -37,6 +39,7 @@ function SettingsPage() {
               { id: "metas",         icon: <Target className="size-4" />,         label: "Metas do mês" },
               { id: "notificacoes",  icon: <Bell className="size-4" />,           label: "Notificações" },
               { id: "whatsapp",      icon: <MessageCircle className="size-4" />,  label: "WhatsApp Premium" },
+              { id: "assistente",    icon: <Sparkles className="size-4" />,       label: "Assistente IA" },
               { id: "sobre",         icon: <Info className="size-4" />,           label: "Sobre o app" },
             ] as { id: Section; icon: React.ReactNode; label: string }[]
           ).map(item => (
@@ -62,7 +65,8 @@ function SettingsPage() {
           {active === "perfil"       && <ProfileSection profile={profile} />}
           {active === "metas"        && <GoalsSection settings={settings} />}
           {active === "notificacoes" && <NotificationsSection settings={settings} />}
-          {active === "whatsapp"     && <WhatsAppSection profile={profile} />}
+          {active === "whatsapp"     && <WhatsAppSection profile={profile} settings={settings} />}
+          {active === "assistente"   && <AssistantSection settings={settings} />}
           {active === "sobre"        && <AboutSection />}
         </div>
       </div>
@@ -324,11 +328,14 @@ function NotificationsSection({ settings }: { settings: any }) {
 }
 
 /* ─── Seção: WhatsApp ───────────────────────────────────────── */
-function WhatsAppSection({ profile }: { profile: any }) {
+function WhatsAppSection({ profile, settings }: { profile: any; settings: any }) {
   const [zapiInstance, setZapiInstance] = React.useState((profile as any)?.zapiInstance ?? "");
   const [zapiToken,    setZapiToken]    = React.useState((profile as any)?.zapiToken ?? "");
   const [showToken,    setShowToken]    = React.useState(false);
   const [saving,       setSaving]       = React.useState(false);
+  const [checkoutOpen, setCheckoutOpen] = React.useState(false);
+
+  const subscribed = settings?.whatsappPremiumActive === true;
 
   React.useEffect(() => {
     if (profile) {
@@ -354,9 +361,28 @@ function WhatsAppSection({ profile }: { profile: any }) {
     <SectionCard
       icon={<MessageCircle className="size-4 text-emerald-600" />}
       title="WhatsApp Premium"
-      badge={{ label: "R$ 9,90/mês", color: "emerald" }}
+      badge={subscribed ? { label: "Assinatura ativa", color: "emerald" } : { label: "R$ 9,90/mês", color: "emerald" }}
       desc="Conecte seu WhatsApp e o sistema responde orçamentos automaticamente para você, mesmo quando você está ocupada ou dormindo."
     >
+      {!subscribed && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 mb-5 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-sm text-emerald-800">Assine por R$9,90/mês pra liberar o bot de atendimento.</p>
+          <button
+            onClick={() => setCheckoutOpen(true)}
+            className="px-4 py-2 rounded-full bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition-colors"
+          >
+            Assinar agora
+          </button>
+        </div>
+      )}
+
+      <MercadoPagoSubscribeModal
+        product="whatsapp_premium"
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        onSubscribed={() => dbRefresh()}
+      />
+
       {/* Status */}
       <div className={cls(
         "flex items-center gap-3 rounded-xl p-3 mb-5 text-sm",
@@ -426,7 +452,82 @@ function WhatsAppSection({ profile }: { profile: any }) {
   );
 }
 
+/* ─── Seção: Assistente IA ──────────────────────────────────── */
+function AssistantSection({ settings }: { settings: any }) {
+  const [checkoutOpen, setCheckoutOpen] = React.useState(false);
+  const subscribed = settings.assistantSubscriptionActive === true;
+  const remaining = settings.assistantFreeUsesRemaining ?? 25;
+
+  return (
+    <SectionCard
+      icon={<Sparkles className="size-4 text-primary" />}
+      title="Assistente IA"
+      badge={subscribed ? { label: "Assinatura ativa", color: "emerald" } : { label: "R$ 9,90/mês", color: "primary" }}
+      desc="Um assistente flutuante, por voz ou texto, que registra vendas, consulta estoque e responde perguntas do seu negócio direto no app."
+    >
+      <div className="rounded-xl bg-surface border border-border p-4 mb-5 space-y-2 text-sm text-muted-foreground">
+        <p className="font-semibold text-foreground text-sm">O que ele faz</p>
+        <p>Você fala ou digita coisas como "vendi o Kit Mickey pro dia 22, cliente Joana, 850 reais" ou "quanto tenho de balão azul?", e ele registra ou responde na hora — sem precisar navegar pelas telas.</p>
+      </div>
+
+      {!subscribed && (
+        <div className={cls(
+          "rounded-xl border p-4 mb-5 text-sm flex items-center justify-between gap-3 flex-wrap",
+          remaining > 0 ? "bg-primary/5 border-primary/20 text-foreground" : "bg-destructive/5 border-destructive/20 text-destructive"
+        )}>
+          <span>
+            {remaining > 0
+              ? `Você tem ${remaining} de 25 interações gratuitas restantes (vitalícias — não renovam todo mês).`
+              : "Suas interações gratuitas do Assistente IA acabaram. Assine por R$9,90/mês pra continuar usando."}
+          </span>
+          <button
+            onClick={() => setCheckoutOpen(true)}
+            className="px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary-dark transition-colors shrink-0"
+          >
+            Assinar agora
+          </button>
+        </div>
+      )}
+
+      <MercadoPagoSubscribeModal
+        product="assistant"
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        onSubscribed={() => dbRefresh()}
+      />
+
+      <Toggle
+        label="Ativar assistente flutuante"
+        desc="Mostra o botão do assistente em todas as telas do app, pronto pra usar por voz ou texto."
+        checked={settings.assistantEnabled}
+        onChange={v => { settingsRepo.update({ assistantEnabled: v }); toast.success(v ? "Assistente ativado" : "Assistente desativado"); }}
+      />
+    </SectionCard>
+  );
+}
+
 /* ─── Seção: Sobre ──────────────────────────────────────────── */
+const STATUS_STYLE: Record<FeatureStatus, { label: string; box: string; badge: string; icon: React.ReactNode }> = {
+  ready: {
+    label: "Pronto",
+    box: "bg-emerald-50 border-emerald-200",
+    badge: "bg-emerald-100 text-emerald-700",
+    icon: <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />,
+  },
+  pending_credentials: {
+    label: "Falta credencial",
+    box: "bg-amber-50 border-amber-200",
+    badge: "bg-amber-100 text-amber-700",
+    icon: <AlertTriangle className="size-4 text-amber-600 shrink-0 mt-0.5" />,
+  },
+  planned: {
+    label: "Planejado",
+    box: "bg-surface border-border",
+    badge: "bg-secondary text-muted-foreground",
+    icon: <Clock className="size-4 text-muted-foreground shrink-0 mt-0.5" />,
+  },
+};
+
 function AboutSection() {
   const reset = () => {
     if (confirm("Tem certeza? Isso apaga TODOS os seus dados. Esta ação não pode ser desfeita.")) {
@@ -439,7 +540,7 @@ function AboutSection() {
   return (
     <SectionCard
       icon={<Info className="size-4 text-primary" />}
-      title="Sobre o Pink Love Gestão"
+      title="Sobre o Decora Gestão"
       desc="Informações sobre o sistema."
     >
       <div className="space-y-4 text-sm text-muted-foreground">
@@ -448,7 +549,7 @@ function AboutSection() {
             { label: "Versão",      value: "1.0.0" },
             { label: "Plataforma",  value: "Web + PWA" },
             { label: "Banco",       value: "Firebase Firestore" },
-            { label: "Sincronismo", value: "Tempo real" },
+            { label: "Sincronismo", value: "Sob demanda" },
           ].map(r => (
             <div key={r.label} className="rounded-xl bg-surface border border-border p-3">
               <p className="text-[10px] font-bold uppercase tracking-wider opacity-50 mb-1">{r.label}</p>
@@ -457,9 +558,29 @@ function AboutSection() {
           ))}
         </div>
 
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Status do MVP</p>
+          <div className="space-y-2">
+            {MVP_STATUS.map(item => (
+              <div key={item.label} className={cls("rounded-xl border p-3 flex items-start gap-3", STATUS_STYLE[item.status].box)}>
+                {STATUS_STYLE[item.status].icon}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold text-foreground text-sm">{item.label}</p>
+                    <span className={cls("text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0", STATUS_STYLE[item.status].badge)}>
+                      {STATUS_STYLE[item.status].label}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{item.note}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="rounded-xl bg-blue-50 border border-blue-100 p-4 text-blue-800 text-xs space-y-1">
           <p className="font-semibold">💾 Seus dados estão seguros</p>
-          <p>Tudo é salvo automaticamente na nuvem. Se fechar o app, seu celular travar ou a internet cair, nenhum dado é perdido — tudo fica guardado e sincroniza quando a conexão voltar.</p>
+          <p>Tudo é salvo automaticamente na nuvem. Suas ações (cadastrar, editar, excluir) aparecem na hora; use o botão "Atualizar" no topo para trazer mudanças feitas por outro dispositivo ou pelo bot do WhatsApp.</p>
         </div>
 
         <div className="pt-2 border-t border-border">
