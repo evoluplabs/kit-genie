@@ -78,8 +78,8 @@ export function conversa() {
     })
     .join("");
   return `
-  <div style="position:absolute;inset:0;background:#efeae2;font-family:'Plus Jakarta Sans',sans-serif">
-    <style>@keyframes cvin{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}</style>
+  <div style="position:absolute;inset:0;background:#efeae2;animation:kb 7s ease-out forwards;font-family:'Plus Jakarta Sans',sans-serif">
+    <style>@keyframes kb{from{transform:scale(1)}to{transform:scale(1.05)}}@keyframes cvin{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}</style>
     <div style="position:absolute;left:0;right:0;top:70px;height:62px;background:#0b6b5d;color:#fff;display:flex;align-items:center;gap:10px;padding:0 14px">
       <div style="width:38px;height:38px;border-radius:50%;background:#25a18e;display:grid;place-items:center;font-weight:800">A</div>
       <div><div style="font-weight:700;font-size:14px">Seu ateliê</div>
@@ -98,9 +98,9 @@ export function fechamento(cfg) {
     .join("");
   const rodape = cfg.rodape ? `<div style="margin-top:14px;font-size:15px;font-weight:600;opacity:.95">${esc(cfg.rodape)}</div>` : "";
   return `
-  <div style="position:absolute;inset:0;background:linear-gradient(160deg,${ROSA},#be185d 70%);color:#fff;text-align:center;
+  <div style="position:absolute;inset:0;background:linear-gradient(160deg,${ROSA},#be185d 70%);animation:kb 7s ease-out forwards;color:#fff;text-align:center;
     font-family:'Plus Jakarta Sans',sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 24px 120px">
-    <style>@keyframes fpop{from{transform:scale(.8) translateY(8px);opacity:0}to{transform:none;opacity:1}}</style>
+    <style>@keyframes kb{from{transform:scale(1)}to{transform:scale(1.05)}}@keyframes fpop{from{transform:scale(.8) translateY(8px);opacity:0}to{transform:none;opacity:1}}</style>
     <div style="font:700 44px/1.12 'Playfair Display',serif">${palavras}</div>
     <div style="margin-top:22px;font-size:19px;font-weight:600;opacity:0;animation:fpop .4s 1.8s forwards">${esc(cfg.linha1)}</div>
     <div style="margin-top:10px;font-size:23px;font-weight:800;opacity:0;animation:fpop .4s 2.3s forwards">${esc(cfg.linha2)}</div>

@@ -1,201 +1,254 @@
-// As 8 seções do vídeo. Cada uma é um mini-roteiro de gestos: legenda, toque, destaque.
-// `dur` é a duração final em segundos; `inicio` é a tela em que a gravação começa.
-// Regras de redação das legendas: ≤ 48 caracteres, uma ideia por legenda, [[palavra]] = destaque.
+// As 8 seções do vídeo. Cada uma é um mini-roteiro de gestos: câmera, legenda, toque, destaque.
+// Princípios de edição (revisão 1): a tela do app fica livre a maior parte do tempo; a legenda é
+// curta, clara e some sozinha em ~2 s; destaque = anel rosa (nada escurece); a câmera se aproxima
+// do que importa e volta; nada fica parado mais de ~2 s.
+// Redação das legendas: ≤ 40 caracteres, uma ideia só, [[palavra]] = destaque rosa.
 import fs from "node:fs";
 import { planilha, conversa, fechamento } from "./cartoes.mjs";
 
 const CONFIG = JSON.parse(fs.readFileSync(new URL("./config.json", import.meta.url), "utf8"));
 
-/** Cartão (bloco) arredondado da tela que contém o texto dado. */
+/** Cartão (bloco) arredondado do app que contém o texto dado. */
 const cartao = (c, texto) =>
-  c.page.getByText(texto, { exact: false }).first().locator("xpath=ancestor::*[contains(@class,'rounded-2xl')][1]");
+  c.app.getByText(texto, { exact: false }).first().locator("xpath=ancestor::*[contains(@class,'rounded-2xl')][1]");
 
 /** Data de hoje + n dias no formato AAAA-MM-DD (fuso de São Paulo), para campos de data. */
-const iso = (n) => {
-  const d = new Date(Date.now() + n * 86_400_000);
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(d);
-};
+const iso = (n) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date(Date.now() + n * 86_400_000));
 const diaDoMes = (n) => Number(iso(n).slice(8));
 
 export const SECOES = [
   // ───────────────────────────── 1. GANCHO ─────────────────────────────
   {
-    n: 1, id: "01-gancho", titulo: "Gancho", dur: 9.6, inicio: "/app",
-    async antes(c) {
-      await c.page.evaluate((h) => { window.__ov.card(h); }, planilha());
-      await c.say("Já alugou o mesmo painel pra [[duas festas]]?");
-    },
+    n: 1, id: "01-gancho", titulo: "Gancho", inicio: "/app", semEntrada: true,
+    async antes(c) { await c.card(planilha()); },
     async run(c) {
-      await c.wait(2200);
-      await c.say("Planilha e WhatsApp: a conta [[nunca fecha]].", 2300);
-      await c.say("");
-      await c.cardOff();
-      await c.wait(450);
-      await c.say("Agora imagine [[tudo num só lugar]].", 2200);
-      await c.scroll(120, 900);
-      await c.say("Estoque, agenda e lucro. [[No celular.]]", 1500);
+      await c.say("Já alugou o mesmo painel pra [[duas festas]]?", { pos: "bot", big: true, hold: 2200 });
+      await c.wait(2400);
+      await c.say("Na planilha, a conta [[nunca fecha]].", { pos: "bot", hold: 1500 });
+      await c.wait(1700);
+      await c.trocaCom(async () => {
+        await c.cardOff();
+        await c.zoomTo({ x: 10, y: 40, w: 300, h: 80 }, 1.45, { ms: 1, fy: 0.3 });
+      });
+      c.zoomOut(1400, false);
+      await c.say("Agora imagine [[tudo num só lugar]].", { pos: "bot", hold: 1600 });
+      await c.wait(3000);
     },
   },
 
   // ───────────────────────────── 2. PAINEL ─────────────────────────────
   {
-    n: 2, id: "02-painel", titulo: "Painel do dia", dur: 14, inicio: "/app",
+    n: 2, id: "02-painel", titulo: "Painel do dia", capitulo: "02 · Painel do dia", inicio: "/app",
     async run(c) {
-      const p = c.page;
-      c.say("Abriu o app? Já vê como está o [[mês]].");
-      await c.wait(400);
-      await c.count(p.getByText("R$ 9.100,00", { exact: true }).first(), 9100, 1400);
-      await c.wait(1000);
+      const fat = cartao(c, "Faturamento do mês");
+      await c.zoomTo(fat, 1.5, { ms: 800, fy: 0.4 });
+      c.say("Abriu o app? Já vê [[como está o mês]].", { em: fat });
+      await c.count(c.app.getByText("R$ 9.100,00", { exact: true }).first(), 9100, 1300);
+      await c.tag("+86% sobre o mês anterior", fat, { fx: 0.5, fy: 0, verde: true, ms: 1700 });
+      await c.wait(1100);
 
-      await c.say("[[Lucro]] do mês, sem planilha.");
-      await c.spot(cartao(c, "Lucro estimado"), 2200);
+      const lucro = cartao(c, "Lucro estimado");
+      await c.zoomTo(lucro, 1.55, { ms: 700 });
+      await c.ring(lucro, 4);
+      await c.say("[[Lucro]] do mês, sem planilha.", { em: lucro });
+      await c.wait(2000);
+      await c.ringOff();
 
+      await c.zoomOut(450);
       const meta = cartao(c, "Meta do mês");
-      await c.reveal(meta, 200, 700);
-      await c.say("Meta do mês acompanhada [[ao vivo]].");
-      await c.spot(meta, 2200);
+      await c.reveal(meta, 260, 700);
+      await c.zoomTo(meta, 1.35, { ms: 700 });
+      await c.ring(meta, 4);
+      await c.wait(1800);
+      await c.ringOff();
 
+      await c.zoomOut(450);
       const alerta = cartao(c, "Alertas de estoque");
-      await c.reveal(alerta, 200, 800);
-      await c.say("O que está acabando, ele [[avisa antes]].");
-      await c.spot(alerta, 2400);
-
-      await c.say("Tudo isso nasce das suas [[vendas]].", 1800);
+      await c.reveal(alerta, 240, 800);
+      await c.zoomTo(alerta, 1.35, { ms: 700 });
+      await c.ring(alerta, 4);
+      await c.say("Estoque acabando? Ele [[avisa antes]].", { em: alerta });
+      await c.wait(2000);
+      await c.ringOff();
+      await c.zoomOut(500);
     },
   },
 
   // ─────────────────────── 3. KITS E LISTA DE MATERIAIS ───────────────────────
   {
-    n: 3, id: "03-kits", titulo: "Kits e lista de materiais", dur: 17, inicio: "/app/kits",
+    n: 3, id: "03-kits", titulo: "Kits e lista de materiais", capitulo: "03 · Kits e materiais", inicio: "/app/kits",
     async run(c) {
-      const p = c.page;
-      await c.say("Cada kit tem sua [[lista de materiais]].", 1200);
-      await c.scroll(260, 1000);
-      await c.wait(500);
-      await c.reveal(p.getByText("Kit Mickey Premium").first(), 330, 600);
-      await c.tap(p.getByText("Kit Mickey Premium").first(), 900);
+      const a = c.app;
+      const kit = a.getByText("Kit Mickey Premium").first();
+      c.say("Cada kit tem sua [[lista de materiais]].", { pos: "bot" });
+      await c.scrollBy(300, 1200);
+      await c.reveal(kit, 330, 500);
+      await c.tap(kit, 700);
 
-      await c.say("Cada peça com [[quantidade]] e custo.");
-      const bom = p.getByText("Materiais do kit (BOM)").first();
-      await c.reveal(bom, 150, 1100);
-      await c.wait(900);
+      const bom = a.getByText("Materiais do kit (BOM)").first();
+      await c.reveal(bom, 150, 900);
+      const custo = a.getByText(/Custo:/).first().locator("..");
+      await c.zoomTo(custo, 1.6, { ms: 700, fy: 0.36 });
+      await c.ring(custo, 8);
+      const m = (await custo.innerText()).match(/margem\s*(\d+)%/);
+      if (m) await c.tag(`margem ${m[1]}%`, custo, { fx: 0.8, fy: 0, verde: true, ms: 2000 });
+      await c.say("Custo e [[margem]] na hora.", { em: custo });
+      await c.wait(2100);
+      await c.ringOff();
 
-      await c.say("Custo e [[margem]] calculados na hora.");
-      await c.spot(p.getByText(/Custo:/).first().locator(".."), 2500, 10);
-
-      await c.say("Bronze, prata ou ouro: [[3 preços]] num kit só.");
-      const tiers = p.getByText("Tiers Bronze / Prata / Ouro").first();
-      await c.reveal(tiers, 230, 900);
-      await c.spot(tiers.locator("xpath=ancestor::*[contains(@class,'rounded')][1]"), 2400, 8);
-
-      await c.tap(p.getByRole("button", { name: "Cancelar" }).first(), 400);
-      await c.say("E cada peça já tem [[estoque próprio]].", 1600);
+      await c.zoomOut(450);
+      const tiers = a.getByText("Tiers Bronze / Prata / Ouro").first();
+      await c.reveal(tiers, 230, 800);
+      const tcard = tiers.locator("xpath=ancestor::*[contains(@class,'rounded')][1]");
+      await c.zoomTo(tcard, 1.3, { ms: 700 });
+      await c.ring(tcard, 6);
+      await c.say("[[3 preços]] no mesmo kit.", { em: tcard });
+      await c.wait(1900);
+      await c.ringOff();
+      await c.zoomOut(450);
+      await c.tap(a.getByRole("button", { name: "Cancelar" }).first(), 250);
     },
   },
 
   // ─────────────────── 4. VENDA QUE MEXE NO ESTOQUE ───────────────────
   {
-    n: 4, id: "04-venda", titulo: "Venda que baixa o estoque", dur: 26, inicio: "/app/sales",
+    n: 4, id: "04-venda", titulo: "Venda que baixa o estoque", capitulo: "04 · Venda e estoque", inicio: "/app/sales",
     async run(c) {
-      const p = c.page;
-      await c.say("Fechou venda? Registra em [[segundos]].", 800);
-      await c.tap(p.getByText("Nova locação").first(), 900);
-      await c.type(p.getByPlaceholder("Nome completo"), "Beatriz Lopes", 60);
-      await c.say("Escolhe o kit e o [[nível]].");
-      await c.tap(p.getByRole("button", { name: /Ouro/ }).first(), 700);
+      const a = c.app;
+      c.say("Fechou venda? [[Segundos]] pra registrar.", { pos: "bot", hold: 1700 });
+      await c.tap(a.getByText("Nova locação").first(), 500);
+      await c.type(a.getByPlaceholder("Nome completo"), "Beatriz Lopes", 38);
+      await c.tap(a.getByRole("button", { name: /Ouro/ }).first(), 350);
 
       // mesma data de outro cliente com o mesmo kit → o sistema avisa
-      const datas = p.locator('input[type="date"]');
-      await c.reveal(datas.first(), 200, 700);
+      const datas = a.locator('input[type="date"]');
+      await c.reveal(datas.first(), 190, 600);
       await datas.first().fill(iso(12));
       await datas.nth(1).fill(iso(13));
-      await c.say("Mesmo kit, mesma data? Ele [[avisa]].");
-      const aviso = p.getByText("kit já agendado nesse período").first().locator("xpath=ancestor::*[contains(@class,'rounded-xl')][1]");
-      await c.reveal(aviso, 300, 700);
-      await c.spot(aviso, 2600, 6);
+      const aviso = a.getByText("kit já agendado nesse período").first().locator("xpath=ancestor::*[contains(@class,'rounded-xl')][1]");
+      await c.reveal(aviso, 300, 500);
+      await c.zoomTo(aviso, 1.35, { ms: 700 });
+      await c.ring(aviso, 4);
+      await c.say("Mesmo kit, mesma data? Ele [[avisa]].", { em: aviso });
+      await c.wait(2200);
+      await c.ringOff();
 
       // data livre → disponível
       await datas.first().fill(iso(7));
       await datas.nth(1).fill(iso(8));
-      await c.say("Outra data: [[tudo disponível]].");
-      const ok = p.getByText("Disponível!").first().locator("xpath=ancestor::*[contains(@class,'rounded-xl')][1]");
+      await c.zoomOut(400);
+      const ok = a.getByText("Disponível!").first().locator("xpath=ancestor::*[contains(@class,'rounded-xl')][1]");
       await c.reveal(ok, 300, 500);
-      await c.spot(ok, 2200, 6);
+      await c.zoomTo(ok, 1.35, { ms: 600 });
+      await c.ring(ok, 4);
+      await c.tag("✓ tudo livre", ok, { fx: 0.5, fy: 0, verde: true, ms: 1700 });
+      await c.wait(1700);
+      await c.ringOff();
+      await c.zoomOut(400);
 
-      await c.tap(p.getByRole("button", { name: "Registrar locação" }), 400);
-      await c.say("Salvou? O estoque [[baixa sozinho]].", 1700);
+      await c.tap(a.getByRole("button", { name: "Registrar locação" }), 300);
+      await c.say("Salvou? O estoque [[baixa sozinho]].", { pos: "bot" });
+      await c.wait(1800);
 
-      await c.say("No Acervo, a conta já [[atualizou]].");
       await c.nav("Acervo");
-      await c.tap(p.locator("button:has(svg.lucide-layout-grid)").first(), 600);
-      const balao = p.locator("div.rounded-2xl").filter({ hasText: "Balão Látex Rosa Pastel G" }).filter({ hasText: "pct" }).first();
-      await c.reveal(balao, 250, 800);
-      await c.say("Balões: de 8 para [[6 pacotes]].");
-      await c.spot(balao, 2600, 6);
+      await c.tap(a.locator("button:has(svg.lucide-layout-grid)").first(), 350);
+      const balao = a.locator("div.rounded-2xl").filter({ hasText: "Balão Látex Rosa Pastel G" }).filter({ hasText: "pct" }).first();
+      await c.reveal(balao, 250, 700);
+      await c.zoomTo(balao, 1.5, { ms: 700 });
+      await c.ring(balao, 4);
+      await c.tag("8 → 6", balao, { fx: 0.5, fy: 0, ms: 2200 });
+      await c.say("Balões: de 8 para [[6 pacotes]].", { em: balao });
+      await c.wait(2300);
+      await c.ringOff();
+      await c.zoomOut(500);
     },
   },
 
   // ───────────────────────────── 5. AGENDA ─────────────────────────────
   {
-    n: 5, id: "05-agenda", titulo: "Agenda", dur: 10, inicio: "/app/sales",
+    n: 5, id: "05-agenda", titulo: "Agenda", capitulo: "05 · Agenda", inicio: "/app/sales",
     async run(c) {
-      const p = c.page;
-      await c.say("Sua agenda de [[festas]], mês a mês.", 600);
-      await c.tap(p.getByText("Calendário").first(), 900);
-      await c.scroll(260, 900);
-      await c.wait(600);
-      await c.say("Toque no dia: [[cliente, kit e valor]].");
-      await c.tap(p.getByRole("button", { name: new RegExp(`^${diaDoMes(3)}$`) }).first(), 900);
-      await c.scroll(300, 900);
-      await c.wait(1800);
-      await c.say("Nada de [[esquecer]] uma entrega.", 1500);
+      const a = c.app;
+      c.say("Sua agenda de [[festas]].", { pos: "bot" });
+      await c.tap(a.getByText("Calendário").first(), 500);
+      await c.scrollBy(270, 800);
+      const cal = a.getByText("DOM").first().locator("xpath=ancestor::*[contains(@class,'rounded-2xl')][1]");
+      await c.zoomTo(cal, 1.15, { ms: 700, fy: 0.45 });
+      const dia = a.getByRole("button", { name: new RegExp(`^${diaDoMes(3)}$`) }).first();
+      await c.tap(dia, 350);
+      await c.ring(dia, 4);
+      await c.say("Toque no dia: [[cliente, kit e valor]].", { em: dia });
+      await c.wait(1700);
+      await c.ringOff();
+      await c.zoomOut(450);
+      await c.scrollBy(300, 900);
+      await c.wait(1000);
     },
   },
 
   // ───────────────────── 6. FINANÇAS E RELATÓRIOS ─────────────────────
   {
-    n: 6, id: "06-financas", titulo: "Finanças e relatórios", dur: 14, inicio: "/app/finance",
+    n: 6, id: "06-financas", titulo: "Finanças e relatórios", capitulo: "06 · Finanças", inicio: "/app/finance",
     async run(c) {
-      const p = c.page;
-      await c.say("Custos do negócio e pessoais, [[separados]].");
-      await c.spot(cartao(c, "Custos profissionais"), 2200);
-      await c.say("Lucro do negócio: receita menos [[custos]].");
-      await c.count(cartao(c, "Lucro líquido").getByText("R$ 6.300,00", { exact: true }).first(), 6300, 1300);
-      await c.spot(cartao(c, "Lucro líquido"), 1400);
+      const prof = cartao(c, "Custos profissionais");
+      await c.zoomTo(prof, 1.5, { ms: 800 });
+      await c.ring(prof, 4);
+      await c.tag("negócio e pessoal, separados", prof, { fx: 0.5, fy: 0, verde: true, ms: 1900 });
+      await c.wait(2100);
+      await c.ringOff();
+
+      const lucro = cartao(c, "Lucro líquido");
+      await c.zoomTo(lucro, 1.5, { ms: 600 });
+      await c.ring(lucro, 4);
+      c.say("Receita menos custos: [[seu lucro]].", { em: lucro });
+      await c.count(lucro.getByText("R$ 6.300,00", { exact: true }).first(), 6300, 1200);
+      await c.wait(1000);
+      await c.ringOff();
+      await c.zoomOut(450);
+
       await c.nav("Relatórios");
-      await c.say("Tudo exportável para o [[contador]].");
       const csv = cartao(c, "Estoque completo");
-      await c.reveal(csv, 300, 800);
-      await c.spot(csv, 2400, 6);
-      await c.say("Vendas, estoque, financeiro e [[kits]].", 1500);
+      await c.reveal(csv, 300, 700);
+      await c.zoomTo(csv, 1.4, { ms: 700 });
+      await c.ring(csv, 4);
+      await c.tag("CSV", csv, { fx: 0.9, fy: 0, verde: true, ms: 1700 });
+      await c.say("Tudo [[exportável]] pro contador.", { em: csv });
+      await c.wait(2000);
+      await c.ringOff();
+      await c.zoomOut(450);
     },
   },
 
   // ───────────────────── 7. CLIENTES E WHATSAPP ─────────────────────
   {
-    n: 7, id: "07-clientes", titulo: "Clientes e WhatsApp", dur: 11.5, inicio: "/app/customers",
+    n: 7, id: "07-clientes", titulo: "Clientes e WhatsApp", capitulo: "07 · Clientes e WhatsApp", inicio: "/app/customers",
     async run(c) {
-      const p = c.page;
-      await c.say("Quem compra mais fica no [[radar]].");
-      await c.spot(cartao(c, "Clientes VIP"), 2200);
+      const vip = cartao(c, "Clientes VIP");
+      await c.zoomTo(vip, 1.6, { ms: 800 });
+      await c.ring(vip, 4);
+      await c.say("Quem compra mais fica no [[radar]].", { em: vip });
+      await c.wait(1900);
+      await c.ringOff();
+      await c.zoomOut(450);
+
       const pano = cartao(c, "Panorama de fidelidade");
-      await c.reveal(pano, 200, 900);
-      await c.spot(pano, 2000, 4);
-      await c.say("E o WhatsApp [[responde por você]].");
-      await c.page.evaluate((h) => window.__ov.card(h), conversa());
-      await c.wait(3000);
-      await c.say("Você só confirma o [[pix]].", 2600);
+      await c.reveal(pano, 220, 800);
+      await c.zoomTo(pano, 1.25, { ms: 700 });
+      await c.wait(900);
+      await c.zoomOut(350);
+
+      await c.trocaCom(async () => { await c.card(conversa()); });
+      await c.say("O [[WhatsApp]] responde por você.", { pos: "bot", hold: 1500 });
+      await c.wait(2800);
+      await c.say("Você só confirma o [[pix]].", { pos: "bot", hold: 1500 });
+      await c.wait(1700);
     },
   },
 
   // ───────────────────────────── 8. FECHAMENTO ─────────────────────────────
   {
-    n: 8, id: "08-fechamento", titulo: "Fechamento", dur: 6, inicio: "/app",
-    async antes(c) {
-      await c.page.evaluate((h) => window.__ov.card(h), fechamento(CONFIG.fechamento));
-    },
-    async run(c) {
-      await c.wait(5500);
-    },
+    n: 8, id: "08-fechamento", titulo: "Fechamento", inicio: "/app", semSaida: true,
+    async antes(c) { await c.card(fechamento(CONFIG.fechamento)); },
+    async run(c) { await c.wait(4600); },
   },
 ];

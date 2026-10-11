@@ -9,7 +9,7 @@ Nada aqui altera o produto nem usa chave, conta ou dado de cliente.
 | `roteiro.md` | Roteiro, narração opcional e sugestões de cortes |
 | `cenas.mjs` | As 8 seções (gestos e legendas) — edite aqui para mudar o texto |
 | `cartoes.mjs` | Telas sem app: planilha bagunçada, conversa de exemplo, fechamento |
-| `overlay.mjs` | Legenda, dedo, destaque, contador, barra de progresso |
+| `palco.mjs` | O "palco" 1080×1920 onde o app roda: câmera (zoom), legenda, anel, etiquetas, dedo, capítulos e transições |
 | `config.json` | Texto do cartão final (sem marca e sem preço) |
 | `gravar.mjs` / `montar.sh` | Grava as seções / gera os MP4 finais |
 | `standin/` | Troca o login e o banco do Firebase por dados de exemplo, **só para gravar** |
@@ -24,6 +24,8 @@ Nada aqui altera o produto nem usa chave, conta ou dado de cliente.
 
 Variáveis úteis: `APP_URL` (endereço do app) e `CHROME_PATH` (Chromium/Chrome).
 Se o app mudar de tela ou de texto, ajuste os seletores em `cenas.mjs` e regrave a seção afetada.
+`DEPURAR=1 node gravar.mjs` mostra quadros capturados por segundo (≥ 24 é fluido).
+Só na gravação, o `palco.mjs` desliga o desfoque do fundo dos modais e suaviza o fundo escuro deles (o produto não muda).
 
 ## Observações sobre o app (achadas durante a gravação)
 - Em **Finanças**, o cartão "Lucro líquido" diz "Receita menos todos os custos", mas o cálculo subtrai só os custos **profissionais** (os pessoais ficam de fora). A legenda do vídeo diz apenas "receita menos custos".

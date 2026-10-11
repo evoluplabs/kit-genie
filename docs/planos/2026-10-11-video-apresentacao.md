@@ -59,3 +59,16 @@ Entregue em `video/saida/`: completo 1:48 (1080×1920), versão WhatsApp 720×12
 - Barra de progresso no topo fica na faixa que o Instagram pode cobrir; é só decorativa.
 - Não verificado por mim: som (não há), ritmo percebido assistindo em tempo real, aparência dentro do Instagram/WhatsApp de verdade.
 - Achado no app (não corrigido, fora do pedido): em Finanças, "Lucro líquido" diz "receita menos todos os custos" mas só desconta os custos profissionais.
+
+## Revisão 1 — pedido do dono (11/10/2026): legenda esporádica, sem fundo escuro, mais envolvente
+**Problema:** a legenda larga e escura ficava fixa e cobria o app; o destaque escurecia a tela.
+**Faz agora:** (1) legenda clara, curta (1 linha), 1,5–2 s, em faixa livre, nunca sobre o alvo; (2) destaque = anel rosa fino, sem escurecer; (3) "câmera" com zoom/pan suave; (4) etiquetas e números que pulam ao lado do elemento; (5) digitação acelerada, sem tempo parado; (6) título de capítulo no início de cada seção; (7) transição em varrida rosa entre seções.
+**Faz depois (se quiser):** efeitos sonoros (ele escolheu sem som); versão 16:9.
+**Como:** o app roda dentro de um iframe num "palco" 1080×1920 (`palco.mjs`); a câmera é um zoom/deslocamento do iframe; legendas, anel e dedo ficam na camada de cima.
+**Prova:** (a) texto do app nítido com zoom 1,6× num quadro recortado; (b) em cada seção, legenda visível ≤ 45% do tempo; nenhuma parada de imagem ≥ 2 s (freezedetect); (c) folha de contato sem legenda sobre o elemento-alvo.
+
+### Resultado da Revisão 1
+Completo 1:41 (100,9 s), WhatsApp 5,5 MB. Verificado: legenda na tela em 31–47% do tempo nas seções do app (gancho 72%, que é texto por natureza); nenhuma parada de imagem ≥ 2 s (maiores: 1,6 s); nenhum trecho preto; captura de 35–55 quadros/s (sem desfoque dos modais). Texto do app nítido com zoom (teste no protótipo).
+Mudanças além do pedido: título de capítulo no lugar da barra de progresso; fundo escuro dos modais do app suavizado só na gravação.
+**Não verificado:** a fluidez do movimento assistindo em tempo real (só por quadros e contagem de quadros/s); aparência no Instagram/WhatsApp de verdade.
+**Fica de fora:** efeitos sonoros (escolha dele: sem som).
