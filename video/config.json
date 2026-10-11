@@ -1,0 +1,8 @@
+{
+  "_ajuda": "Texto do cartão final do vídeo (seção 08). Sem marca e sem preço, por decisão. Para pôr nome ou contato, preencha 'rodape' e rode: node gravar.mjs 08 && bash montar.sh",
+  "fechamento": {
+    "linha1": "Tudo isso no seu celular.",
+    "linha2": "Quer ver funcionando?",
+    "rodape": ""
+  }
+}

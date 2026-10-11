@@ -1,0 +1,7 @@
+{
+  "name": "video-apresentacao",
+  "private": true,
+  "type": "module",
+  "description": "Gera o vídeo de apresentação gravando o app rodando com dados fictícios",
+  "dependencies": { "playwright-core": "1.56.1" }
+}
