@@ -50,3 +50,12 @@ Um vídeo vertical de ~1:45 que apresenta o sistema (funções, uso do dia a dia
 
 ## Regras que valem aqui
 Regras globais do dono: português simples; nada de deploy/PR/merge/gasto sem ordem; segredo nunca no repositório (nenhuma chave Firebase é usada); contexto barato (imagens pequenas, só quando o texto não basta); fechamento diz o que foi feito, o que não foi verificado e o que depende dele.
+
+## Resultado (11/10/2026) e o que saiu diferente do plano
+Entregue em `video/saida/`: completo 1:48 (1080×1920), versão WhatsApp 720×1280 (5,1 MB) e 8 clipes por seção. Roteiro e cortes em `video/roteiro.md`.
+- **Seção 4 tem 26 s** (o plano limitava a 22 s): é a demonstração central; mantida inteira.
+- **T4:** testei só a captura via CDP (nítida em 1080×1920); o método `recordVideo` não foi comparado.
+- **"Último quadro igual ao primeiro" (loop) não foi feito:** o vídeo abre na planilha e fecha num cartão rosa.
+- Barra de progresso no topo fica na faixa que o Instagram pode cobrir; é só decorativa.
+- Não verificado por mim: som (não há), ritmo percebido assistindo em tempo real, aparência dentro do Instagram/WhatsApp de verdade.
+- Achado no app (não corrigido, fora do pedido): em Finanças, "Lucro líquido" diz "receita menos todos os custos" mas só desconta os custos profissionais.
